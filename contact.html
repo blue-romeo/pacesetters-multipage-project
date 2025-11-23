@@ -43,9 +43,73 @@
             </div>
         </section>
 
-        <!-- Copy the full form section from your original index.html (lines 382-463) -->
-        <!-- This includes the complete join/contact form with Formspree integration -->
-        
+       <section id="join" class="section section-gray">
+            <div class="container form-container">
+                <h2 class="section-title">Join Our Club</h2>
+                <p class="form-intro">Ready to start your Pathfinder adventure? Fill out the form below and we'll get in touch!</p>
+                
+                <form id="contact-form" class="contact-form" novalidate>
+                    <div class="form-group">
+                        <label for="name">Full Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" required aria-required="true">
+                        <span class="error-message" id="name-error" role="alert"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="guardian">Parent/Guardian Name (if under 18)</label>
+                        <input type="text" id="guardian" name="guardian">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" required aria-required="true">
+                            <span class="error-message" id="email-error" role="alert"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone <span class="required">*</span></label>
+                            <input type="tel" id="phone" name="phone" required aria-required="true">
+                            <span class="error-message" id="phone-error" role="alert"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age <span class="required">*</span></label>
+                        <input type="number" id="age" name="age" min="10" max="15" required aria-required="true">
+                        <span class="error-message" id="age-error" role="alert"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message (Optional)</label>
+                        <textarea id="message" name="message" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="consent" name="consent" required aria-required="true">
+                        <label for="consent" class="checkbox-label">
+                            I agree to the collection and use of my personal information for Pathfinders Club registration purposes. <span class="required">*</span>
+                        </label>
+                        <span class="error-message" id="consent-error" role="alert"></span>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Submit Application</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Success Modal -->
+        <div class="modal" id="success-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-content">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <h3 id="modal-title">Thank You!</h3>
+                <p>Your application has been submitted successfully. We'll be in touch soon!</p>
+            </div>
+        </div>
+    </main>
         <section id="join" class="section">
             <div class="container form-container">
                 <h2 class="section-title">Join Our Club</h2>
