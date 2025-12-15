@@ -50,6 +50,16 @@ button {
     cursor: pointer;
 }
 
+.downloads{
+    padding: 3px;
+    border:  var(--color-gold) 3px solid ;
+    border-radius: 50px;
+    color: var(--color-green);
+    margin: 10px;
+    ;
+
+}
+
 /* ========== FOCUS STYLES (ACCESSIBILITY) ========== */
 *:focus-visible {
     outline: 3px solid var(--color-gold);
