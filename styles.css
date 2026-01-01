@@ -60,6 +60,7 @@ button {
 
 }
 
+
 /* ========== FOCUS STYLES (ACCESSIBILITY) ========== */
 *:focus-visible {
     outline: 3px solid var(--color-gold);
@@ -1754,6 +1755,7 @@ input[type="checkbox"] {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-decoration: none;
 }
 
 .download-btn:hover,
