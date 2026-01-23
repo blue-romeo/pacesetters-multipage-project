@@ -326,12 +326,6 @@ function updateCountdown() {
     if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
 }
 
-// Update countdown every second
-if (countdownElement) {
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-}
-
 // ========== PHOTO UPLOAD PREVIEW ========== 
 const photoInput = document.getElementById('photo');
 const photoPreview = document.getElementById('photo-preview');
@@ -438,7 +432,7 @@ async function loadEventsFromAPI() {
     if (!eventsList) return;
 
     try {
-        const result = await fetchWithCache(API_CONFIG.getFullURL('/events'), 'events', 3 * 60 * 1000); // 3 min cache
+        const result = await fetchWithCache(API_CONFIG.getFullURL(`/events?ts=${Date.now()}`), 'events', 0); // no cache to reflect admin updates
         
         if (result.success && result.data && result.data.length > 0) {
             // Transform API data to match eventsData format
@@ -681,7 +675,7 @@ async function loadHomeUpcomingEvents() {
     if (!eventsPreview) return;
 
     try {
-        const result = await fetchWithCache(API_CONFIG.getFullURL('/events?upcoming=true&limit=3'), 'home_events', 5 * 60 * 1000); // 5 min cache
+        const result = await fetchWithCache(API_CONFIG.getFullURL(`/events?upcoming=true&limit=3&ts=${Date.now()}`), 'home_events', 0); // no cache to reflect admin updates
         
         if (result.success && result.data && result.data.length > 0) {
             eventsPreview.innerHTML = result.data.map((event, index) => {
@@ -850,6 +844,8 @@ function showNextImage() {
 }
 
 // ========== FAQ ACCORDION ==========
+
+const lightbox = document.getElementById('lightbox');
 
 // Close lightbox when clicking on background
 if (lightbox) {

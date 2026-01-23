@@ -3,9 +3,11 @@
  * Centralized configuration for all API endpoints
  */
 
+const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) || window.location.protocol === 'file:';
+
 const API_CONFIG = {
     
-    baseURL: window.location.hostname === 'localhost' 
+    baseURL: isLocalhost
         ? 'http://localhost:5000/api' 
         : '/api',
     

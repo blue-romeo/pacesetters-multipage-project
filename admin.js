@@ -40,8 +40,10 @@ async function apiRequest(endpoint, options = {}) {
     const defaultOptions = {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }
+            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache'
+        },
+        cache: 'no-store'
     };
     
     const config = {
@@ -52,9 +54,16 @@ async function apiRequest(endpoint, options = {}) {
             ...options.headers
         }
     };
+
+    let requestUrl = `${API_URL}${endpoint}`;
+    const method = (config.method || 'GET').toUpperCase();
+    if (method === 'GET' && !config.cacheBustDisabled) {
+        const separator = requestUrl.includes('?') ? '&' : '?';
+        requestUrl = `${requestUrl}${separator}ts=${Date.now()}`;
+    }
     
     try {
-        const response = await fetch(`${API_URL}${endpoint}`, config);
+        const response = await fetch(requestUrl, config);
         const data = await response.json();
         
         if (response.status === 401) {
@@ -470,7 +479,7 @@ async function loadEvents(page = 1) {
     }
     
     tbody.innerHTML = events.map(event => `
-        <tr>
+        <tr data-event-id="${event._id}">
             <td>${event.title}</td>
             <td>${event.category}</td>
             <td>${new Date(event.startDate).toLocaleDateString()}</td>
@@ -1284,7 +1293,7 @@ window.saveEventChanges = async (event, id) => {
             `The event "${eventData.title}" has been updated successfully.`,
             'success'
         );
-        loadEvents();
+        await loadEvents();
     } else {
         // Handle validation errors
         let errorMessage = 'Failed to update event. Please try again.';
@@ -1303,9 +1312,13 @@ window.deleteEvent = async (id) => {
     if (!confirm('Are you sure you want to delete this event?')) return;
     const result = await apiRequest(`/events/${id}`, { method: 'DELETE' });
     if (result && result.data && result.data.success) {
+        const row = document.querySelector(`#events-tbody tr[data-event-id="${id}"]`);
+        if (row) {
+            row.remove();
+        }
         clearFrontendCache(['events', 'home_events']); // Clear frontend events cache
         showToast('Event deleted', 'success');
-        loadEvents();
+        await loadEvents();
     }
 };
 
@@ -2035,7 +2048,7 @@ window.createNewEvent = async (event) => {
             `The event "${eventData.title}" has been ${eventData.isPublished ? 'created and published' : 'saved as draft'}. It will appear in the events list.`,
             'success'
         );
-        loadEvents();
+        await loadEvents();
     } else {
         // Handle validation errors
         let errorMessage = 'An error occurred while creating the event. Please check your connection and try again.';
