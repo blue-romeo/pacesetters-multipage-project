@@ -6,6 +6,7 @@
     <meta name="description" content="Photo gallery of Pathfinders Club activities, events, and adventures">
     <title>Gallery - Pathfinders Club</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -48,59 +49,11 @@
                 <h2 class="section-title">Recent Adventures</h2>
                 
                 <div class="gallery-grid">
-                    <button class="gallery-item" data-index="0" aria-label="Open image 1 in lightbox">
-                        <img src="Pathfinders Pictures/junior with flag.jpg" 
-                             alt="Junior carrying a flag" 
-                             loading="lazy">
-                    </button>
-                    
-                    <button class="gallery-item" data-index="1" aria-label="Open image 2 in lightbox">
-                        <img src="Pathfinders Pictures/pauline.jpg" 
-                             alt="A pathfinder smiling" 
-                             loading="lazy">
-                    </button>
-                    
-                    <button class="gallery-item" data-index="2" aria-label="Open image 3 in lightbox">
-                        <img src="Pathfinders Pictures/Philip teaching adventures.jpg" 
-                             alt="A pathfinder leading the childens sermon." 
-                             loading="lazy">
-                    </button>
-                    
-                    <button class="gallery-item" data-index="3" aria-label="Open image 4 in lightbox">
-                        <img src="Pathfinders Pictures/pathfinders fair.jpg" 
-                             alt="Pathfinders Fair"
-                             loading="lazy">
-                    </button>
-                    
-                    <button class="gallery-item" data-index="4" aria-label="Open image 5 in lightbox">
-                        <img src="Pathfinders Pictures/Philip.jpg" 
-                             alt="A serious pathfinder." 
-                             loading="lazy">
-                    </button>
-                    
-                    <button class="gallery-item" data-index="5" aria-label="Open image 6 in lightbox">
-                        <img src="Pathfinders Pictures/elder with pastor.jpg" 
-                             alt="The pastor and elder for the Church" 
-                             loading="lazy">
-                    </button>
-
-                    <button class="gallery-item" data-index="6" aria-label="Open image 7 in lightbox">
-                        <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&h=600&fit=crop" 
-                             alt="Hiking and nature exploration" 
-                             loading="lazy">
-                    </button>
-
-                    <button class="gallery-item" data-index="7" aria-label="Open image 8 in lightbox">
-                        <img src="https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=800&h=600&fit=crop" 
-                             alt="Campfire fellowship" 
-                             loading="lazy">
-                    </button>
-
-                    <button class="gallery-item" data-index="8" aria-label="Open image 9 in lightbox">
-                        <img src="https://images.unsplash.com/photo-1445217143695-467124038776?w=800&h=600&fit=crop" 
-                             alt="Honor class activities" 
-                             loading="lazy">
-                    </button>
+                    <!-- Gallery images loaded dynamically from API -->
+                    <div class="dynamic-loader" style="grid-column: 1/-1;">
+                        <div class="loader-spinner"></div>
+                        <p class="loader-text">Loading gallery images...</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -214,7 +167,7 @@
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2025 Pathfinders Club. All rights reserved.</p>
+                <p>&copy; 2026 Pathfinders Club. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -226,16 +179,8 @@
         </svg>
     </button>
 
-    <script src="script.js"></script>
-</body>
-</html>
 
-    <button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="18 15 12 9 6 15"/>
-        </svg>
-    </button>
-
+    <script src="api-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

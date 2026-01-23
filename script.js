@@ -9,6 +9,93 @@ Features: Mobile menu, form validation, gallery lightbox, calendar downloads,
 Version: 2.0 - Multi-Page
 */
 
+// ========== CACHING UTILITIES ========== 
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+const CacheManager = {
+    set(key, data, duration = CACHE_DURATION) {
+        const cacheData = {
+            data: data,
+            timestamp: Date.now(),
+            duration: duration
+        };
+        try {
+            localStorage.setItem(`pathfinders_${key}`, JSON.stringify(cacheData));
+        } catch (e) {
+            console.warn('Cache storage failed:', e);
+        }
+    },
+    
+    get(key) {
+        try {
+            const cached = localStorage.getItem(`pathfinders_${key}`);
+            if (!cached) return null;
+            
+            const cacheData = JSON.parse(cached);
+            const now = Date.now();
+            
+            // Check if cache is still valid
+            if (now - cacheData.timestamp < cacheData.duration) {
+                return cacheData.data;
+            }
+            
+            // Cache expired, remove it
+            this.remove(key);
+            return null;
+        } catch (e) {
+            console.warn('Cache retrieval failed:', e);
+            return null;
+        }
+    },
+    
+    remove(key) {
+        try {
+            localStorage.removeItem(`pathfinders_${key}`);
+        } catch (e) {
+            console.warn('Cache removal failed:', e);
+        }
+    },
+    
+    clear() {
+        try {
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith('pathfinders_')) {
+                    localStorage.removeItem(key);
+                }
+            });
+        } catch (e) {
+            console.warn('Cache clear failed:', e);
+        }
+    }
+};
+
+// ========== OPTIMIZED API FETCH ========== 
+async function fetchWithCache(url, cacheKey, cacheDuration = CACHE_DURATION) {
+    // Check cache first
+    const cached = CacheManager.get(cacheKey);
+    if (cached) {
+        console.log(`📦 Cache hit: ${cacheKey}`);
+        return cached;
+    }
+    
+    // Fetch from API
+    console.log(`🌐 Fetching: ${cacheKey}`);
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        if (result.success) {
+            CacheManager.set(cacheKey, result, cacheDuration);
+        }
+        
+        return result;
+    } catch (error) {
+        console.error(`Error fetching ${cacheKey}:`, error);
+        throw error;
+    }
+}
+
 // ========== MOBILE NAVIGATION ========== 
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('navLinks');
@@ -132,15 +219,34 @@ const newsletterForm = document.getElementById('newsletter-form');
 const newsletterEmail = document.getElementById('newsletter-email');
 
 if (newsletterForm && newsletterEmail) {
-    newsletterForm.addEventListener('submit', (e) => {
+    newsletterForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const email = newsletterEmail.value.trim();
         
         if (email && validateEmail(email)) {
-            // Show success message
-            alert(`Thank you for subscribing! We'll send updates to ${email}`);
-            newsletterForm.reset();
+            try {
+                const response = await fetch(API_CONFIG.getFullURL(API_CONFIG.endpoints.newsletter.subscribe), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    alert(`Thank you for subscribing! We'll send updates to ${email}`);
+                    newsletterForm.reset();
+                } else {
+                    alert(result.message || 'Failed to subscribe. Please try again.');
+                }
+            } catch (error) {
+                console.error('Newsletter subscription error:', error);
+                alert('Network error. Please try again later.');
+            }
         } else {
             alert('Please enter a valid email address');
         }
@@ -148,12 +254,54 @@ if (newsletterForm && newsletterEmail) {
 }
 
 // ========== COUNTDOWN TIMER ========== 
-const countdownDate = new Date('November 15, 2025 18:00:00').getTime();
-const countdownElement = document.getElementById('countdown');
+let countdownInterval;
+let nextEventDate = null;
+let nextEventName = '';
+
+async function initializeCountdown() {
+    try {
+        const response = await fetch(API_CONFIG.getFullURL('/events?upcoming=true&limit=1'));
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.length > 0) {
+            const nextEvent = result.data[0];
+            nextEventDate = new Date(nextEvent.startDate);
+            nextEventName = nextEvent.title;
+            
+            // Update countdown event text
+            const countdownEventElement = document.querySelector('.countdown-event');
+            if (countdownEventElement) {
+                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                countdownEventElement.textContent = `${nextEventName} - ${nextEventDate.toLocaleDateString('en-US', dateOptions)}`;
+            }
+            
+            // Start the countdown
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        } else {
+            // No upcoming events
+            const countdownSection = document.querySelector('.countdown-section');
+            if (countdownSection) {
+                countdownSection.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading countdown:', error);
+        const countdownSection = document.querySelector('.countdown-section');
+        if (countdownSection) {
+            countdownSection.style.display = 'none';
+        }
+    }
+}
 
 function updateCountdown() {
+    if (!nextEventDate) return;
+    
     const now = new Date().getTime();
-    const distance = countdownDate - now;
+    const distance = nextEventDate.getTime() - now;
+    
+    const countdownElement = document.getElementById('countdown');
+    if (!countdownElement) return;
     
     if (distance < 0) {
         if (countdownElement) {
@@ -282,35 +430,305 @@ learnMoreButtons.forEach(button => {
 });
 
 // ========== EVENTS - CALENDAR DOWNLOAD ========== 
-const eventsData = [
-    {
-        title: 'Monthly Campout',
-        date: '2025-11-15',
-        time: '18:00',
-        endTime: '14:00',
-        endDate: '2025-11-17',
-        description: 'Join us for a weekend of outdoor adventure, worship, and fellowship. Bring your tent, sleeping bag, and sense of adventure!',
-        location: 'Pine Ridge Campground'
-    },
-    {
-        title: 'Community Service Day',
-        date: '2025-11-22',
-        time: '09:00',
-        endTime: '14:00',
-        endDate: '2025-11-22',
-        description: 'Help us serve our community by volunteering at the food bank. We will sort donations, pack boxes, and make a real difference.',
-        location: 'Local Food Bank'
-    },
-    {
-        title: 'Investiture Ceremony',
-        date: '2025-12-06',
-        time: '10:00',
-        endTime: '12:00',
-        endDate: '2025-12-06',
-        description: 'Celebrate achievements as Pathfinders receive their honors and badges. Families and friends welcome!',
-        location: 'Church Auditorium'
+let eventsData = [];
+
+// Load events dynamically from API
+async function loadEventsFromAPI() {
+    const eventsList = document.querySelector('.events-list');
+    if (!eventsList) return;
+
+    try {
+        const result = await fetchWithCache(API_CONFIG.getFullURL('/events'), 'events', 3 * 60 * 1000); // 3 min cache
+        
+        if (result.success && result.data && result.data.length > 0) {
+            // Transform API data to match eventsData format
+            eventsData = result.data.map(event => ({
+                title: event.title,
+                date: event.startDate.split('T')[0],
+                time: new Date(event.startDate).toTimeString().slice(0, 5),
+                endTime: event.endDate ? new Date(event.endDate).toTimeString().slice(0, 5) : '23:59',
+                endDate: event.endDate ? event.endDate.split('T')[0] : event.startDate.split('T')[0],
+                description: event.description,
+                location: event.location || 'TBD',
+                _id: event._id,
+                category: event.category,
+                maxParticipants: event.maxParticipants,
+                registeredParticipants: event.registeredParticipants
+            }));
+            
+            // Render events to the page
+            renderEvents(eventsData);
+        } else {
+            // Remove loader and show empty state
+            const loader = eventsList.querySelector('.dynamic-loader');
+            if (loader) loader.remove();
+            eventsList.innerHTML = '<div style="text-align: center; padding: 4rem 2rem; grid-column: 1/-1;"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin: 0 auto 1.5rem;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><h3 style="color: #6b7280; font-size: 1.25rem; margin-bottom: 0.5rem;">No Events Yet</h3><p style="color: #9ca3af;">Events created by the admin will appear here. Check back soon!</p></div>';
+        }
+    } catch (error) {
+        console.error('Error loading events:', error);
+        const loader = eventsList.querySelector('.dynamic-loader');
+        if (loader) loader.remove();
+        eventsList.innerHTML = '<div style="text-align: center; padding: 4rem 2rem; grid-column: 1/-1;"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" style="margin: 0 auto 1.5rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3 style="color: #ef4444; font-size: 1.25rem; margin-bottom: 0.5rem;">Failed to Load Events</h3><p style="color: #9ca3af;">Unable to connect to the server. Please try again later.</p></div>';
     }
-];
+}
+
+// Render events to the events list
+function renderEvents(events) {
+    const eventsList = document.querySelector('.events-list');
+    if (!eventsList) return;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    eventsList.innerHTML = events.map((event, index) => {
+        const eventDate = new Date(event.date);
+        eventDate.setHours(0, 0, 0, 0);
+        const status = eventDate >= today ? 'upcoming' : 'past';
+        
+        // Format date display
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = eventDate.toLocaleDateString('en-US', dateOptions);
+        
+        // Format time display
+        const startTime = event.time;
+        const endTime = event.endTime;
+        let timeDisplay = startTime;
+        if (event.endDate !== event.date) {
+            const endDateObj = new Date(event.endDate);
+            const endDateOptions = { weekday: 'long' };
+            timeDisplay = `${startTime} - ${endDateObj.toLocaleDateString('en-US', endDateOptions)} ${endTime}`;
+        } else if (endTime) {
+            timeDisplay = `${startTime} - ${endTime}`;
+        }
+        
+        return `
+            <article class="event-card" data-status="${status}" data-date="${event.date}">
+                <div class="event-content">
+                    <div class="event-details">
+                        <h3>${event.title}</h3>
+                        <div class="event-meta">
+                            <div class="meta-item">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                <span>${formattedDate}</span>
+                            </div>
+                            <div class="meta-item">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                <span>${timeDisplay}</span>
+                            </div>
+                            <div class="meta-item">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                <span>${event.location}</span>
+                            </div>
+                        </div>
+                        <p class="event-description">${event.description}</p>
+                    </div>
+                    <button class="add-calendar-btn" data-event="${index}">Add to Calendar</button>
+                </div>
+            </article>
+        `;
+    }).join('');
+    
+    // Reattach event listeners for calendar buttons
+    document.querySelectorAll('.add-calendar-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const eventIndex = parseInt(this.getAttribute('data-event'));
+            generateICS(eventsData[eventIndex]);
+        });
+    });
+    
+    // Initialize filter after rendering
+    initializeEventFilter();
+}
+
+// Initialize event filter
+function initializeEventFilter() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const eventCards = document.querySelectorAll('.event-card');
+    
+    filterButtons.forEach(button => {
+        // Remove existing listeners
+        button.replaceWith(button.cloneNode(true));
+    });
+    
+    // Reattach listeners
+    document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter events
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            document.querySelectorAll('.event-card').forEach(card => {
+                const eventDate = new Date(card.getAttribute('data-date'));
+                eventDate.setHours(0, 0, 0, 0);
+                
+                if (filter === 'upcoming') {
+                    if (eventDate >= today) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                } else if (filter === 'past') {
+                    if (eventDate < today) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+            });
+            
+            // Show message if no events
+            const visibleEvents = Array.from(document.querySelectorAll('.event-card')).filter(card => !card.classList.contains('hidden'));
+            if (visibleEvents.length === 0) {
+                console.log(`No ${filter} events found`);
+            }
+        });
+    });
+}
+
+// ========== LEADERS - DYNAMIC LOADING ========== 
+async function loadLeadersFromAPI() {
+    const leadershipGrid = document.getElementById('leadership-grid');
+    if (!leadershipGrid) return;
+
+    try {
+        const result = await fetchWithCache(API_CONFIG.getFullURL('/leaders'), 'leaders', 10 * 60 * 1000); // 10 min cache
+        
+        if (result.success && result.data && result.data.length > 0) {
+            leadershipGrid.innerHTML = result.data.map(leader => `
+                <div class="leader-card fade-in">
+                    <div class="leader-photo">
+                        <img src="${leader.photoUrl}" alt="${leader.name}" loading="lazy">
+                    </div>
+                    <h3>${leader.name}</h3>
+                    <p class="leader-role">${leader.role}</p>
+                    <p class="leader-bio">${leader.bio}</p>
+                </div>
+            `).join('');
+        } else {
+            // Remove loader and show empty state
+            const loader = leadershipGrid.querySelector('.dynamic-loader');
+            if (loader) loader.remove();
+            leadershipGrid.innerHTML = '<div style="text-align: center; padding: 4rem 2rem; grid-column: 1/-1;"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin: 0 auto 1.5rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><h3 style="color: #6b7280; font-size: 1.25rem; margin-bottom: 0.5rem;">No Leaders Yet</h3><p style="color: #9ca3af;">Leadership team members added by the admin will appear here.</p></div>';
+        }
+    } catch (error) {
+        console.error('Error loading leaders:', error);
+        if (leadershipGrid) {
+            const loader = leadershipGrid.querySelector('.dynamic-loader');
+            if (loader) loader.remove();
+            leadershipGrid.innerHTML = '<div style="text-align: center; padding: 4rem 2rem; grid-column: 1/-1;"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" style="margin: 0 auto 1.5rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3 style="color: #ef4444; font-size: 1.25rem; margin-bottom: 0.5rem;">Failed to Load Leaders</h3><p style="color: #9ca3af;">Unable to connect to the server. Please try again later.</p></div>';
+        }
+    }
+}
+
+// ========== GALLERY - DYNAMIC LOADING ========== 
+let galleryData = [];
+
+async function loadGalleryFromAPI() {
+    const galleryGrid = document.querySelector('.gallery-grid');
+    if (!galleryGrid) return;
+
+    try {
+        const result = await fetchWithCache(API_CONFIG.getFullURL('/gallery'), 'gallery', 10 * 60 * 1000); // 10 min cache
+        
+        if (result.success && result.data && result.data.length > 0) {
+            galleryData = result.data;
+            galleryGrid.innerHTML = galleryData.map((item, index) => `
+                <button class="gallery-item fade-in" data-index="${index}" aria-label="Open image ${index + 1} in lightbox" style="animation-delay: ${index * 0.05}s">
+                    <img src="${item.imageUrl}" 
+                         alt="${item.caption || 'Gallery image'}" 
+                         loading="lazy">
+                </button>
+            `).join('');
+            
+            // Reinitialize lightbox after loading gallery
+            initializeGalleryLightbox();
+        } else {
+            // Remove loader and show empty state
+            const loader = galleryGrid.querySelector('.dynamic-loader');
+            if (loader) loader.remove();
+            galleryGrid.innerHTML = '<div style="text-align: center; padding: 4rem 2rem; grid-column: 1/-1;"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin: 0 auto 1.5rem;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><h3 style="color: #6b7280; font-size: 1.25rem; margin-bottom: 0.5rem;">No Photos Yet</h3><p style="color: #9ca3af;">Photos uploaded by the admin will appear here. Check back soon!</p></div>';
+        }
+    } catch (error) {
+        console.error('Error loading gallery:', error);
+        if (galleryGrid) {
+            const loader = galleryGrid.querySelector('.dynamic-loader');
+            if (loader) loader.remove();
+            galleryGrid.innerHTML = '<div style="text-align: center; padding: 4rem 2rem; grid-column: 1/-1;"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" style="margin: 0 auto 1.5rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3 style="color: #ef4444; font-size: 1.25rem; margin-bottom: 0.5rem;">Failed to Load Gallery</h3><p style="color: #9ca3af;">Unable to connect to the server. Please try again later.</p></div>';
+        }
+    }
+}
+
+// ========== HOMEPAGE - UPCOMING EVENTS PREVIEW ========== 
+async function loadHomeUpcomingEvents() {
+    const eventsPreview = document.querySelector('.events-preview');
+    if (!eventsPreview) return;
+
+    try {
+        const result = await fetchWithCache(API_CONFIG.getFullURL('/events?upcoming=true&limit=3'), 'home_events', 5 * 60 * 1000); // 5 min cache
+        
+        if (result.success && result.data && result.data.length > 0) {
+            eventsPreview.innerHTML = result.data.map((event, index) => {
+                const eventDate = new Date(event.startDate);
+                const day = eventDate.getDate();
+                const month = eventDate.toLocaleDateString('en-US', { month: 'short' });
+                
+                const startTime = new Date(event.startDate).toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit', 
+                    hour12: true 
+                });
+                
+                let endTimeStr = '';
+                if (event.endDate) {
+                    const endDate = new Date(event.endDate);
+                    const endTime = endDate.toLocaleTimeString('en-US', { 
+                        hour: 'numeric', 
+                        minute: '2-digit', 
+                        hour12: true 
+                    });
+                    const endDay = endDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short' });
+                    endTimeStr = ` - ${endDay} ${endTime}`;
+                }
+                
+                return `
+                    <article class="event-card-home fade-in" style="animation-delay: ${index * 0.1}s">
+                        <div class="event-date">
+                            <span class="date-day">${day}</span>
+                            <span class="date-month">${month}</span>
+                        </div>
+                        <div class="event-details">
+                            <h3>${event.title}</h3>
+                            <p class="event-time">${startTime}${endTimeStr}</p>
+                            <p class="event-location">📍 ${event.location}</p>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        } else {
+            eventsPreview.innerHTML = '<p class="fade-in" style="text-align: center; grid-column: 1/-1; padding: 2rem;">No upcoming events at the moment. Check back soon!</p>';
+        }
+    } catch (error) {
+        console.error('Error loading home events:', error);
+        eventsPreview.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 2rem; color: #e53e3e;">Failed to load events. Please try again later.</p>';
+    }
+}
 
 // Generate ICS file for calendar
 function generateICS(event) {
@@ -344,7 +762,7 @@ END:VCALENDAR`;
     URL.revokeObjectURL(url);
 }
 
-// Add to calendar button event listeners
+// Add to calendar button event listeners (for initial hardcoded events)
 document.querySelectorAll('.add-calendar-btn').forEach(button => {
     button.addEventListener('click', function() {
         const eventIndex = parseInt(this.getAttribute('data-event'));
@@ -352,114 +770,86 @@ document.querySelectorAll('.add-calendar-btn').forEach(button => {
     });
 });
 
-// ========== EVENTS - FILTER (UPCOMING/PAST) ========== 
-const filterButtons = document.querySelectorAll('.filter-btn');
-const eventCards = document.querySelectorAll('.event-card');
-
-filterButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        const filter = this.getAttribute('data-filter');
-        
-        // Update active button
-        filterButtons.forEach(btn => btn.classList.remove('active'));
-        this.classList.add('active');
-        
-        // Filter events
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        eventCards.forEach(card => {
-            const eventDate = new Date(card.getAttribute('data-date'));
-            eventDate.setHours(0, 0, 0, 0);
-            
-            if (filter === 'upcoming') {
-                if (eventDate >= today) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
-            } else if (filter === 'past') {
-                if (eventDate < today) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
-            }
-        });
-        
-        // Show message if no events
-        const visibleEvents = Array.from(eventCards).filter(card => !card.classList.contains('hidden'));
-        if (visibleEvents.length === 0) {
-            console.log(`No ${filter} events found`);
-        }
-    });
-});
-
 // ========== GALLERY LIGHTBOX ========== 
-const galleryItems = document.querySelectorAll('.gallery-item');
-const lightbox = document.getElementById('lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
-const lightboxClose = document.querySelector('.lightbox-close');
-const lightboxPrev = document.querySelector('.lightbox-prev');
-const lightboxNext = document.querySelector('.lightbox-next');
-
 let currentImageIndex = 0;
-const galleryImages = Array.from(galleryItems).map(item => {
-    const img = item.querySelector('img');
-    return {
-        src: img.src,
-        alt: img.alt
-    };
-});
+
+function initializeGalleryLightbox() {
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxClose = document.querySelector('.lightbox-close');
+    const lightboxPrev = document.querySelector('.lightbox-prev');
+    const lightboxNext = document.querySelector('.lightbox-next');
+    
+    if (!lightbox) return;
+
+    galleryItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            openLightbox(index);
+        });
+    });
+
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', closeLightbox);
+    }
+
+    if (lightboxPrev) {
+        lightboxPrev.addEventListener('click', showPrevImage);
+    }
+
+    if (lightboxNext) {
+        lightboxNext.addEventListener('click', showNextImage);
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (!lightbox.classList.contains('active')) return;
+        
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') showPrevImage();
+        if (e.key === 'ArrowRight') showNextImage();
+    });
+
+    // Click backdrop to close
+    lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) closeLightbox();
+    });
+}
 
 function openLightbox(index) {
-    if (!lightbox || galleryImages.length === 0) return;
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    
+    if (!lightbox || galleryData.length === 0) return;
     currentImageIndex = index;
-    lightboxImg.src = galleryImages[index].src;
-    lightboxImg.alt = galleryImages[index].alt;
+    lightboxImg.src = galleryData[index].imageUrl;
+    lightboxImg.alt = galleryData[index].caption || 'Gallery image';
     lightbox.classList.add('active');
     document.body.style.overflow = 'hidden'; // Prevent scrolling
 }
 
 function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
     if (!lightbox) return;
     lightbox.classList.remove('active');
     document.body.style.overflow = ''; // Restore scrolling
 }
 
 function showPrevImage() {
-    currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : galleryImages.length - 1;
-    lightboxImg.src = galleryImages[currentImageIndex].src;
-    lightboxImg.alt = galleryImages[currentImageIndex].alt;
+    const lightboxImg = document.getElementById('lightbox-img');
+    currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : galleryData.length - 1;
+    lightboxImg.src = galleryData[currentImageIndex].imageUrl;
+    lightboxImg.alt = galleryData[currentImageIndex].caption || 'Gallery image';
 }
 
 function showNextImage() {
-    currentImageIndex = currentImageIndex < galleryImages.length - 1 ? currentImageIndex + 1 : 0;
-    lightboxImg.src = galleryImages[currentImageIndex].src;
-    lightboxImg.alt = galleryImages[currentImageIndex].alt;
+    const lightboxImg = document.getElementById('lightbox-img');
+    currentImageIndex = currentImageIndex < galleryData.length - 1 ? currentImageIndex + 1 : 0;
+    lightboxImg.src = galleryData[currentImageIndex].imageUrl;
+    lightboxImg.alt = galleryData[currentImageIndex].caption || 'Gallery image';
 }
 
-// Gallery item click handlers
-galleryItems.forEach((item, index) => {
-    item.addEventListener('click', () => {
-        openLightbox(index);
-    });
-});
-
-// Lightbox navigation
-if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
-if (lightboxPrev) {
-    lightboxPrev.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showPrevImage();
-    });
-}
-if (lightboxNext) {
-    lightboxNext.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showNextImage();
-    });
-}
+// ========== FAQ ACCORDION ==========
 
 // Close lightbox when clicking on background
 if (lightbox) {
@@ -589,7 +979,7 @@ function validateForm() {
     return isValid;
 }
 
-// Form submission with Formspree
+// Form submission with Backend API
 if (form) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -605,8 +995,18 @@ if (form) {
             return;
         }
 
-        // Prepare form data
+        // Prepare form data as JSON
         const formData = new FormData(form);
+        const data = {
+            name: formData.get('name').trim(),
+            guardian: formData.get('guardian') ? formData.get('guardian').trim() : undefined,
+            email: formData.get('email').trim(),
+            phone: formData.get('phone').trim(),
+            age: parseInt(formData.get('age')),
+            message: formData.get('message') ? formData.get('message').trim() : undefined,
+            consent: form.consent.checked // Use checked property directly
+        };
+        
         const submitButton = form.querySelector('.submit-btn');
         
         // Disable submit button and show loading state
@@ -615,16 +1015,19 @@ if (form) {
         showFormStatus('sending', 'Sending your application...');
 
         try {
-            // Submit to Formspree
-            const response = await fetch(form.action, {
+            // Submit to Backend API
+            const response = await fetch(API_CONFIG.getFullURL(API_CONFIG.endpoints.contacts.base), {
                 method: 'POST',
-                body: formData,
                 headers: {
+                    'Content-Type': 'application/json',
                     'Accept': 'application/json'
-                }
+                },
+                body: JSON.stringify(data)
             });
 
-            if (response.ok) {
+            const result = await response.json();
+
+            if (response.ok && result.success) {
                 // Success!
                 showFormStatus('success', '✓ Application submitted successfully! We\'ll be in touch soon.');
                 
@@ -653,13 +1056,9 @@ if (form) {
                 }
 
             } else {
-                // Error from Formspree
-                const data = await response.json();
-                if (data.errors) {
-                    showFormStatus('error', '✗ ' + data.errors.map(error => error.message).join(', '));
-                } else {
-                    showFormStatus('error', '✗ There was a problem submitting your form. Please try again.');
-                }
+                // Error from API
+                const errorMsg = result.message || 'There was a problem submitting your form. Please try again.';
+                showFormStatus('error', '✗ ' + errorMsg);
             }
         } catch (error) {
             // Network or other error
@@ -765,7 +1164,7 @@ if (amountInput) {
 
 // Donation form submission
 if (donationForm) {
-    donationForm.addEventListener('submit', function(e) {
+    donationForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const amount = amountInput.value;
@@ -774,11 +1173,43 @@ if (donationForm) {
             return;
         }
         
-        // In a real implementation, this would redirect to payment processor
-        alert(`Thank you for your donation of ${amount}! You will be redirected to the payment page.`);
+        // Get additional form data if available
+        const formData = new FormData(donationForm);
+        const donationData = {
+            donorName: formData.get('donorName') || 'Anonymous',
+            email: formData.get('email') || '',
+            phone: formData.get('phone') || '',
+            amount: parseFloat(amount),
+            currency: 'KES',
+            donationType: formData.get('donationType') || 'one-time',
+            purpose: formData.get('purpose') || 'general',
+            message: formData.get('message') || '',
+            isAnonymous: formData.get('anonymous') === 'on'
+        };
         
-        // Example: Redirect to payment processor
-        // window.location.href = `https://payment-processor.com?amount=${amount}`;
+        try {
+            const response = await fetch(API_CONFIG.getFullURL(API_CONFIG.endpoints.donations.base), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(donationData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert(`Thank you for your donation of ${amount}! You will be redirected to the payment page.`);
+                // In a real implementation, redirect to payment processor
+                // window.location.href = `https://payment-processor.com?amount=${amount}&ref=${result.data._id}`;
+            } else {
+                alert(result.message || 'Failed to process donation. Please try again.');
+            }
+        } catch (error) {
+            console.error('Donation submission error:', error);
+            alert('Network error. Please try again later.');
+        }
     });
 }
 
@@ -880,6 +1311,8 @@ if (currentPage.includes('gallery') || currentPage === '') {
 if (currentPage.includes('events')) {
     console.log('📅 Events features initialized');
     console.log('⏰ Countdown timer active');
+    // Load events dynamically from API
+    loadEventsFromAPI();
 }
 
 if (currentPage.includes('contact') || currentPage.includes('index')) {
@@ -1038,6 +1471,28 @@ console.log('   ✓ Calendar Downloads');
 console.log('   ✓ Scroll Animations');
 console.log('   ✓ Donation Form');
 console.log('🎉 Website ready!');
+
+// ========== PAGE-SPECIFIC INITIALIZATION ========== 
+// Homepage
+if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+    loadHomeUpcomingEvents();
+}
+
+// Events page
+if (window.location.pathname.includes('events.html')) {
+    loadEventsFromAPI();
+    initializeCountdown();
+}
+
+// Gallery page
+if (window.location.pathname.includes('gallery.html')) {
+    loadGalleryFromAPI();
+}
+
+// About page
+if (window.location.pathname.includes('about.html')) {
+    loadLeadersFromAPI();
+}
 
 // ========== EXPORT FOR TESTING (Optional) ========== 
 // If you want to test functions in browser console

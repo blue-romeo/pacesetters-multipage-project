@@ -6,6 +6,7 @@
     <meta name="description" content="Learn about Pathfinders Club - our mission, values, programs, and leadership team">
     <title>About Us - Pathfinders Club</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -199,41 +200,11 @@
                 <h2 class="section-title">Meet Our Leaders</h2>
                 <p class="section-intro">Our dedicated team of volunteers brings years of experience in youth ministry, outdoor education, and spiritual guidance.</p>
                 
-                <div class="leadership-grid">
-                    <div class="leader-card">
-                        <div class="leader-photo">
-                            <img src="Pathfinders Pictures/Eld Ochola.jpg" alt="Elder David Ochola">
-                        </div>
-                        <h3>Elder David Ochola</h3>
-                        <p class="leader-role">Club Director</p>
-                        <p class="leader-bio">Years of youth ministry experience, passionate about outdoor education and helping young people discover their purpose in Christ.</p>
+                <div class="leadership-grid" id="leadership-grid">
+                    <div class="dynamic-loader" style="grid-column: 1/-1;">
+                        <div class="loader-spinner"></div>
+                        <p class="loader-text">Loading leaders...</p>
                     </div>
-                    
-                    <div class="leader-card">
-                        <div class="leader-photo">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=faces" alt="Morin Ondara">
-                        </div>
-                        <h3>Morin Ondara</h3>
-                        <p class="leader-role">Deputy Director</p>
-                        <p class="leader-bio">Nurse and certified first aid instructor who ensures the safety and well-being of all Pathfinders during activities.</p>
-                    </div>
-                    
-                    <div class="leader-card">
-                        <div class="leader-photo">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces" alt="Victoria Kinyua">
-                        </div>
-                        <h3>Victoria Kinyua</h3>
-                        <p class="leader-role">Activities Coordinator</p>
-                        <p class="leader-bio">Certified Master Guide instructor with a heart for community service and empowering young women in leadership roles.</p>
-                    </div>
-                    
-                    <div class="leader-card">
-                        <div class="leader-photo">
-                            <img src="Pathfinders Pictures/romeo-pic.jpeg" alt="Romeo Monene">
-                        </div>
-                        <h3>Romeo Monene</h3>
-                        <p class="leader-role">ICT and Communications Coordinator</p>
-                        <p class="leader-bio">A passionate youth with a heart for community outreach and Christian service.</div>
                 </div>
             </div>
         </section>
@@ -423,6 +394,7 @@
         </svg>
     </button>
 
+    <script src="api-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

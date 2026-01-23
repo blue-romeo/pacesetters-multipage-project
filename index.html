@@ -6,6 +6,8 @@
     <meta name="description" content="Pathfinders Club - Building character, developing leadership, and growing faith through adventure">
     <title>Home - Pathfinders Club</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+    
+    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -15,7 +17,7 @@
             <div class="logo-area">
                 <a href="index.html" class="logo-link">
                     <div class="logo-icon">🏕️</div>
-                    <span class="site-title">Pathfinders Club</span>
+                    <span class="site-title">SDAAQ Pathfinders Club</span>
                 </a>
             </div>
             
@@ -147,39 +149,11 @@
             <div class="container">
                 <h2 class="section-title">Upcoming Events</h2>
                 <div class="events-preview">
-                    <article class="event-card-home">
-                        <div class="event-date">
-                            <span class="date-day">15</span>
-                            <span class="date-month">Nov</span>
-                        </div>
-                        <div class="event-details">
-                            <h3>Monthly Campout</h3>
-                            <p class="event-time">Friday 6:00 PM - Sunday 2:00 PM</p>
-                            <p class="event-location">📍 Pine Ridge Campground</p>
-                        </div>
-                    </article>
-                    <article class="event-card-home">
-                        <div class="event-date">
-                            <span class="date-day">22</span>
-                            <span class="date-month">Nov</span>
-                        </div>
-                        <div class="event-details">
-                            <h3>Community Service Day</h3>
-                            <p class="event-time">Saturday 9:00 AM - 2:00 PM</p>
-                            <p class="event-location">📍 Local Food Bank</p>
-                        </div>
-                    </article>
-                    <article class="event-card-home">
-                        <div class="event-date">
-                            <span class="date-day">06</span>
-                            <span class="date-month">Dec</span>
-                        </div>
-                        <div class="event-details">
-                            <h3>Investiture Ceremony</h3>
-                            <p class="event-time">Saturday 10:00 AM - 12:00 PM</p>
-                            <p class="event-location">📍 Church Auditorium</p>
-                        </div>
-                    </article>
+                    <!-- Events loaded dynamically from API -->
+                    <div class="dynamic-loader-inline">
+                        <div class="loader-spinner-small"></div>
+                        <p class="loader-text">Loading upcoming events...</p>
+                    </div>
                 </div>
                 <div style="text-align: center; margin-top: 2rem;">
                     <a href="events.html" class="button-link">View All Events →</a>
@@ -352,6 +326,13 @@
             
             <div class="footer-bottom">
                 <p>&copy; 2025 Pathfinders Club. All rights reserved.</p>
+                <a href="admin-login.html" class="admin-link" aria-label="Admin Login">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Admin
+                </a>
             </div>
         </div>
     </footer>
@@ -363,6 +344,7 @@
         </svg>
     </button>
 
+    <script src="api-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
