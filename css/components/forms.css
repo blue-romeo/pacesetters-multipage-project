@@ -1,0 +1,245 @@
+/**
+ * Form Components
+ * Contact forms, newsletter forms, donation forms
+ */
+
+/* ========== FORM CONTAINERS ========== */
+.form-container {
+    max-width: 750px;
+}
+
+.form-intro {
+    text-align: center;
+    color: var(--color-gray-700);
+    margin-bottom: var(--spacing-2xl, 2.5rem);
+    font-size: var(--font-size-lg, 1.1rem);
+}
+
+.contact-form,
+.newsletter-form,
+.donation-form {
+    background: var(--color-white);
+    padding: var(--spacing-2xl, 2.5rem);
+    border-radius: var(--border-radius-xl, 1.5rem);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ========== FORM GROUPS ========== */
+.form-group {
+    margin-bottom: var(--spacing-lg, 1.75rem);
+}
+
+.form-row {
+    display: grid;
+    gap: var(--spacing-lg, 1.5rem);
+}
+
+@media (min-width: 768px) {
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ========== LABELS ========== */
+label {
+    display: block;
+    font-size: var(--font-size-sm, 0.95rem);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-green);
+    margin-bottom: var(--spacing-sm, 0.5rem);
+}
+
+.required {
+    color: var(--color-error, #EF4444);
+}
+
+/* ========== INPUTS ========== */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+    width: 100%;
+    padding: var(--spacing-sm, 0.875rem) var(--spacing-md, 1rem);
+    border: 2px solid var(--color-gray-300);
+    border-radius: var(--border-radius-lg, 0.75rem);
+    font-family: inherit;
+    font-size: var(--font-size-base, 1rem);
+    transition: all var(--transition-base);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+}
+
+input.error,
+textarea.error,
+select.error {
+    border-color: var(--color-error, #EF4444);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* ========== ERROR MESSAGES ========== */
+.error-message {
+    color: var(--color-error, #EF4444);
+    font-size: var(--font-size-sm, 0.875rem);
+    margin-top: var(--spacing-sm, 0.5rem);
+    display: none;
+}
+
+.error-message.active {
+    display: block;
+}
+
+/* ========== CHECKBOX & RADIO ========== */
+.checkbox-group,
+.radio-group {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm, 0.75rem);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 0.25rem;
+    cursor: pointer;
+    accent-color: var(--color-gold);
+    flex-shrink: 0;
+}
+
+.checkbox-label,
+.radio-label {
+    font-size: var(--font-size-sm, 0.9rem);
+    color: var(--color-gray-700);
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+/* ========== SUBMIT BUTTON ========== */
+.submit-btn {
+    width: 100%;
+    padding: var(--spacing-md, 1rem);
+    background: var(--color-gold);
+    color: var(--color-green);
+    border: none;
+    border-radius: var(--border-radius-full, 50px);
+    font-size: var(--font-size-lg, 1.125rem);
+    font-weight: var(--font-weight-bold, 700);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.submit-btn:hover,
+.submit-btn:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ========== FORM STATUS MESSAGES ========== */
+.form-status {
+    margin-top: var(--spacing-md, 1rem);
+    padding: var(--spacing-md, 1rem);
+    border-radius: var(--border-radius-lg, 0.75rem);
+    display: none;
+    text-align: center;
+    font-weight: var(--font-weight-semibold, 600);
+}
+
+.form-status.success {
+    display: block;
+    background: #D1FAE5;
+    color: #065F46;
+    border: 2px solid var(--color-success, #10B981);
+}
+
+.form-status.error {
+    display: block;
+    background: #FEE2E2;
+    color: #991B1B;
+    border: 2px solid var(--color-error, #EF4444);
+}
+
+.form-status.sending {
+    display: block;
+    background: #FEF3C7;
+    color: #92400E;
+    border: 2px solid var(--color-warning, #F59E0B);
+}
+
+/* ========== FILE UPLOAD ========== */
+.file-upload {
+    position: relative;
+}
+
+.file-upload-label {
+    display: inline-block;
+    padding: var(--spacing-md, 1rem) var(--spacing-xl, 2rem);
+    background: var(--color-gray-100);
+    border: 2px dashed var(--color-gray-300);
+    border-radius: var(--border-radius-lg, 0.75rem);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: center;
+    width: 100%;
+}
+
+.file-upload-label:hover {
+    background: var(--color-gray-50);
+    border-color: var(--color-gold);
+}
+
+input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+}
+
+#photo-preview {
+    margin-top: var(--spacing-md, 1rem);
+    display: none;
+}
+
+#photo-preview.active {
+    display: block;
+}
+
+#photo-preview img {
+    max-width: 200px;
+    border-radius: var(--border-radius-lg);
+    border: 2px solid var(--color-gray-300);
+}
+
+.remove-photo {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: var(--color-error);
+    color: var(--color-white);
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-size: var(--font-size-xl);
+    line-height: 1;
+}

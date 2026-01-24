@@ -222,11 +222,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadDashboardStats() {
     try {
         // Fetch all stats in parallel
-        const [contactsRes, newsletterRes, donationsRes, eventsRes] = await Promise.all([
+        const [contactsRes, newsletterRes, donationsRes, eventsRes, galleryRes, leadersRes, volunteersRes, adminsRes] = await Promise.all([
             apiRequest('/contacts?limit=1'),
             apiRequest('/newsletter?limit=1'),
             apiRequest('/donations/stats'),
-            apiRequest('/events?upcoming=true&limit=1')
+            apiRequest('/events?upcoming=true&limit=1'),
+            apiRequest('/gallery/admin/all?limit=1'),
+            apiRequest('/leaders/admin/all?limit=1'),
+            apiRequest('/volunteers?limit=1'),
+            apiRequest('/auth/admins?limit=1')
         ]);
         
         // Update stat cards
@@ -249,6 +253,22 @@ async function loadDashboardStats() {
         if (eventsRes?.data.success) {
             document.getElementById('stat-events').textContent = eventsRes.data.total || 0;
             document.getElementById('events-count').textContent = eventsRes.data.total || 0;
+        }
+        
+        if (galleryRes?.data.success) {
+            document.getElementById('gallery-count').textContent = galleryRes.data.total || 0;
+        }
+        
+        if (leadersRes?.data.success) {
+            document.getElementById('leaders-count').textContent = leadersRes.data.total || 0;
+        }
+        
+        if (volunteersRes?.data.success) {
+            document.getElementById('volunteers-count').textContent = volunteersRes.data.total || 0;
+        }
+        
+        if (adminsRes?.data.success) {
+            document.getElementById('admins-count').textContent = adminsRes.data.total || 0;
         }
     } catch (error) {
         console.error('Error loading stats:', error);
@@ -336,6 +356,9 @@ async function loadSectionData(section) {
             break;
         case 'leaders':
             await loadLeaders();
+            break;
+        case 'volunteers':
+            await loadVolunteers();
             break;
         case 'admins':
             await loadAdmins();
@@ -513,13 +536,23 @@ async function loadGallery(page = 1, category = '') {
     
     const items = result.data.data;
     
+    // Update badge count
+    document.getElementById('gallery-count').textContent = result.data.total || 0;
+    
     if (items.length === 0) {
         grid.innerHTML = '<div class="text-center">No gallery items found</div>';
+        document.getElementById('gallery-selection-bar').style.display = 'none';
         return;
     }
     
+    // Show selection bar when items are loaded
+    document.getElementById('gallery-selection-bar').style.display = 'block';
+    
     grid.innerHTML = items.map(item => `
-        <div class="gallery-item">
+        <div class="gallery-item" data-id="${item._id}">
+            <div class="gallery-item-checkbox">
+                <input type="checkbox" class="gallery-checkbox" data-id="${item._id}">
+            </div>
             <img src="${item.imageUrl}" alt="${item.title}">
             <div class="gallery-item-overlay">
                 <button class="btn-sm" onclick="viewGalleryItem('${item._id}')">View</button>
@@ -529,7 +562,103 @@ async function loadGallery(page = 1, category = '') {
         </div>
     `).join('');
     
+    // Attach checkbox event listeners
+    attachGalleryCheckboxListeners();
+    
     renderPagination('gallery-pagination', result.data.currentPage, result.data.totalPages, (p) => loadGallery(p, category));
+}
+
+// Attach event listeners to gallery checkboxes
+function attachGalleryCheckboxListeners() {
+    const checkboxes = document.querySelectorAll('.gallery-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateGallerySelection);
+    });
+    
+    // Select all checkbox
+    const selectAllCheckbox = document.getElementById('select-all-gallery');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.replaceWith(selectAllCheckbox.cloneNode(true));
+        const newSelectAll = document.getElementById('select-all-gallery');
+        newSelectAll.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.gallery-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateGallerySelection();
+        });
+    }
+}
+
+// Update gallery selection state
+function updateGallerySelection() {
+    const checkboxes = document.querySelectorAll('.gallery-checkbox');
+    const checkedBoxes = document.querySelectorAll('.gallery-checkbox:checked');
+    const selectAllCheckbox = document.getElementById('select-all-gallery');
+    const deleteBtn = document.getElementById('delete-selected-gallery-btn');
+    const selectedCount = document.getElementById('selected-count');
+    
+    // Update select all checkbox state
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = checkboxes.length > 0 && checkedBoxes.length === checkboxes.length;
+        selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < checkboxes.length;
+    }
+    
+    // Show/hide delete button and update count
+    if (checkedBoxes.length > 0) {
+        deleteBtn.style.display = 'flex';
+        selectedCount.textContent = checkedBoxes.length;
+    } else {
+        deleteBtn.style.display = 'none';
+    }
+}
+
+// Delete selected gallery items
+window.deleteSelectedGalleryItems = async function() {
+    const checkedBoxes = document.querySelectorAll('.gallery-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.getAttribute('data-id'));
+    
+    if (selectedIds.length === 0) {
+        showToast('No items selected', 'error');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected item(s)? This action cannot be undone.`)) {
+        return;
+    }
+    
+    const deleteBtn = document.getElementById('delete-selected-gallery-btn');
+    const originalText = deleteBtn.innerHTML;
+    deleteBtn.disabled = true;
+    deleteBtn.innerHTML = '<span>Deleting...</span>';
+    
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Delete items one by one
+    for (const id of selectedIds) {
+        const result = await apiRequest(`/gallery/admin/${id}`, { method: 'DELETE' });
+        if (result && result.data && result.data.success) {
+            successCount++;
+        } else {
+            errorCount++;
+        }
+    }
+    
+    deleteBtn.disabled = false;
+    deleteBtn.innerHTML = originalText;
+    
+    // Show results
+    if (errorCount === 0) {
+        showToast(`Successfully deleted ${successCount} item(s)`, 'success');
+        clearFrontendCache(['gallery']);
+    } else {
+        showToast(`Deleted ${successCount} item(s), ${errorCount} failed`, 'error');
+    }
+    
+    // Reload gallery
+    const category = document.getElementById('filter-gallery-category').value;
+    loadGallery(1, category);
 }
 
 // Load Leaders
@@ -544,6 +673,9 @@ async function loadLeaders(page = 1) {
     }
     
     const leaders = result.data.data;
+    
+    // Update badge count
+    document.getElementById('leaders-count').textContent = result.data.total || 0;
     
     if (leaders.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center">No leaders found</td></tr>';
@@ -566,6 +698,263 @@ async function loadLeaders(page = 1) {
     `).join('');
     
     renderPagination('leaders-pagination', result.data.currentPage, result.data.totalPages, (p) => loadLeaders(p));
+}
+
+// Load Volunteers
+async function loadVolunteers(page = 1) {
+    const tbody = document.getElementById('volunteers-tbody');
+    tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading volunteers...</td></tr>';
+    
+    const result = await apiRequest(`/volunteers?page=${page}&limit=10`);
+    if (!result || !result.data || !result.data.success) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Error loading volunteers</td></tr>';
+        return;
+    }
+    
+    const volunteers = result.data.data;
+    
+    // Update badge count
+    document.getElementById('volunteers-count').textContent = result.data.total || 0;
+    
+    if (volunteers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No volunteers found</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = volunteers.map(volunteer => `
+        <tr>
+            <td>${volunteer.name}</td>
+            <td>${volunteer.email}</td>
+            <td>${volunteer.phone}</td>
+            <td>${volunteer.age}</td>
+            <td><span class="interests-badge">${volunteer.interests.length} areas</span></td>
+            <td><span class="status-badge status-${volunteer.status}">${volunteer.status}</span></td>
+            <td>${new Date(volunteer.submittedAt).toLocaleDateString()}</td>
+            <td class="table-actions">
+                <button class="btn-sm btn-view" onclick="viewVolunteer('${volunteer._id}')">View</button>
+                <button class="btn-sm btn-edit" onclick="updateVolunteerStatus('${volunteer._id}')">Status</button>
+                <button class="btn-sm btn-delete" onclick="deleteVolunteer('${volunteer._id}')">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+    
+    renderPagination('volunteers-pagination', result.data.currentPage, result.data.totalPages, (p) => loadVolunteers(p));
+}
+
+// View Volunteer Details
+async function viewVolunteer(id) {
+    const result = await apiRequest(`/volunteers/${id}`);
+    if (!result || !result.data || !result.data.success) {
+        showToast('Failed to load volunteer details', 'error');
+        return;
+    }
+    
+    const volunteer = result.data.data;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-dialog" style="max-width: 700px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Volunteer Details</h2>
+                    <button class="btn-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="detail-section">
+                        <h3>Personal Information</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <strong>Name:</strong>
+                                <span>${volunteer.name}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Email:</strong>
+                                <span>${volunteer.email}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Phone:</strong>
+                                <span>${volunteer.phone}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Age:</strong>
+                                <span>${volunteer.age}</span>
+                            </div>
+                            ${volunteer.occupation ? `
+                            <div class="detail-item">
+                                <strong>Occupation:</strong>
+                                <span>${volunteer.occupation}</span>
+                            </div>` : ''}
+                            ${volunteer.address ? `
+                            <div class="detail-item">
+                                <strong>Address:</strong>
+                                <span>${volunteer.address}</span>
+                            </div>` : ''}
+                            <div class="detail-item">
+                                <strong>Status:</strong>
+                                <span class="status-badge status-${volunteer.status}">${volunteer.status}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Submitted:</strong>
+                                <span>${new Date(volunteer.submittedAt).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Volunteer Interests</h3>
+                        <div class="interests-list">
+                            ${volunteer.interests.map(interest => {
+                                const labels = {
+                                    'honor-classes': 'Lead Honor Classes',
+                                    'camping-trips': 'Chaperone Camping Trips',
+                                    'administrative': 'Administrative Tasks',
+                                    'mentoring': 'Mentoring Pathfinders',
+                                    'fundraising': 'Fundraising Events',
+                                    'community-service': 'Community Service Projects',
+                                    'other': 'Other'
+                                };
+                                return `<span class="interest-tag">${labels[interest] || interest}</span>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    ${volunteer.skills ? `
+                    <div class="detail-section">
+                        <h3>Skills & Expertise</h3>
+                        <p>${volunteer.skills}</p>
+                    </div>` : ''}
+                    
+                    <div class="detail-section">
+                        <h3>Availability</h3>
+                        <p>${volunteer.availability}</p>
+                    </div>
+                    
+                    ${volunteer.experience ? `
+                    <div class="detail-section">
+                        <h3>Previous Experience</h3>
+                        <p>${volunteer.experience}</p>
+                    </div>` : ''}
+                    
+                    ${volunteer.message ? `
+                    <div class="detail-section">
+                        <h3>Additional Information</h3>
+                        <p>${volunteer.message}</p>
+                    </div>` : ''}
+                    
+                    ${volunteer.notes ? `
+                    <div class="detail-section">
+                        <h3>Admin Notes</h3>
+                        <p>${volunteer.notes}</p>
+                    </div>` : ''}
+                    
+                    <div class="detail-section">
+                        <div class="detail-item">
+                            <strong>Background Check Consent:</strong>
+                            <span class="status-badge status-${volunteer.backgroundCheck ? 'approved' : 'rejected'}">
+                                ${volunteer.backgroundCheck ? 'Provided' : 'Not Provided'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Close</button>
+                    <button class="btn-primary" onclick="updateVolunteerStatus('${volunteer._id}'); this.closest('.modal-overlay').remove();">Update Status</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Update Volunteer Status
+async function updateVolunteerStatus(id) {
+    const result = await apiRequest(`/volunteers/${id}`);
+    if (!result || !result.data || !result.data.success) {
+        showToast('Failed to load volunteer details', 'error');
+        return;
+    }
+    
+    const volunteer = result.data.data;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Update Volunteer Status</h2>
+                    <button class="btn-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                </div>
+                <form id="update-volunteer-status-form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Volunteer: ${volunteer.name}</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="volunteer-status">Status</label>
+                            <select id="volunteer-status" name="status" class="form-control" required>
+                                <option value="pending" ${volunteer.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="reviewed" ${volunteer.status === 'reviewed' ? 'selected' : ''}>Reviewed</option>
+                                <option value="approved" ${volunteer.status === 'approved' ? 'selected' : ''}>Approved</option>
+                                <option value="active" ${volunteer.status === 'active' ? 'selected' : ''}>Active</option>
+                                <option value="rejected" ${volunteer.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="volunteer-notes">Admin Notes</label>
+                            <textarea id="volunteer-notes" name="notes" class="form-control" rows="4" placeholder="Add any notes about this volunteer...">${volunteer.notes || ''}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                        <button type="submit" class="btn-primary">Update Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById('update-volunteer-status-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const status = document.getElementById('volunteer-status').value;
+        const notes = document.getElementById('volunteer-notes').value;
+        
+        const updateResult = await apiRequest(`/volunteers/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status, notes })
+        });
+        
+        if (updateResult && updateResult.data && updateResult.data.success) {
+            showToast('Volunteer status updated successfully', 'success');
+            modal.remove();
+            loadVolunteers();
+        } else {
+            showToast(updateResult.data?.message || 'Failed to update volunteer status', 'error');
+        }
+    });
+}
+
+// Delete Volunteer
+async function deleteVolunteer(id) {
+    if (!confirm('Are you sure you want to delete this volunteer application? This action cannot be undone.')) {
+        return;
+    }
+    
+    const result = await apiRequest(`/volunteers/${id}`, {
+        method: 'DELETE'
+    });
+    
+    if (result && result.data && result.data.success) {
+        showToast('Volunteer deleted successfully', 'success');
+        loadVolunteers();
+    } else {
+        showToast(result.data?.message || 'Failed to delete volunteer', 'error');
+    }
 }
 
 // Render Pagination
@@ -660,10 +1049,15 @@ document.getElementById('filter-gallery-category')?.addEventListener('change', (
     loadGallery(1, e.target.value);
 });
 
+document.getElementById('filter-volunteers-status')?.addEventListener('change', (e) => {
+    loadVolunteers(1);
+});
+
 // Export buttons
 document.getElementById('export-contacts')?.addEventListener('click', () => exportData('contacts'));
 document.getElementById('export-newsletter')?.addEventListener('click', () => exportData('newsletter'));
 document.getElementById('export-donations')?.addEventListener('click', () => exportData('donations'));
+document.getElementById('export-volunteers')?.addEventListener('click', () => exportData('volunteers'));
 
 // CRUD Operations
 window.viewContact = async (id) => {
@@ -1097,6 +1491,23 @@ window.viewEvent = async (id) => {
     if (!result || !result.data || !result.data.success) return;
     
     const event = result.data.data;
+    
+    // Fetch registration count if registration is enabled
+    let registrationStats = '';
+    if (event.requiresRegistration) {
+        const regResult = await apiRequest(`/event-registrations/event/${id}`);
+        if (regResult && regResult.data && regResult.data.success) {
+            const stats = regResult.data.stats;
+            registrationStats = `
+                <div class="detail-group">
+                    <label>Registrations</label>
+                    <p>${stats.total} total (${stats.confirmed} confirmed, ${stats.pending} pending)</p>
+                    <button class="btn-sm btn-view" onclick="viewEventRegistrations('${id}', '${event.title}')" style="margin-top: 8px;">View Registrations</button>
+                </div>
+            `;
+        }
+    }
+    
     const modalHTML = `
         <div class="modal-backdrop" onclick="closeModal()"></div>
         <div class="modal-content">
@@ -1130,8 +1541,25 @@ window.viewEvent = async (id) => {
                     <p>${event.location || '-'}</p>
                 </div>
                 <div class="detail-group">
-                    <label>Participants</label>
-                    <p>${event.registeredParticipants?.length || 0}${event.maxParticipants ? `/${event.maxParticipants}` : ''}</p>
+                    <label>Registration Required</label>
+                    <p>${event.requiresRegistration ? 'Yes' : 'No'}</p>
+                </div>
+                ${event.requiresRegistration ? `
+                    <div class="detail-group">
+                        <label>Registration Deadline</label>
+                        <p>${event.registrationDeadline ? new Date(event.registrationDeadline).toLocaleString() : '-'}</p>
+                    </div>
+                ` : ''}
+                ${event.cost > 0 ? `
+                    <div class="detail-group">
+                        <label>Cost</label>
+                        <p>KES ${event.cost.toLocaleString()}</p>
+                    </div>
+                ` : ''}
+                ${registrationStats}
+                <div class="detail-group">
+                    <label>Max Participants</label>
+                    <p>${event.maxParticipants || 'Unlimited'}</p>
                 </div>
                 <div class="detail-group">
                     <label>Status</label>
@@ -1145,6 +1573,241 @@ window.viewEvent = async (id) => {
     `;
     document.getElementById('modal-container').innerHTML = modalHTML;
     document.getElementById('modal-container').style.display = 'flex';
+};
+
+// View Event Registrations
+window.viewEventRegistrations = async (eventId, eventTitle) => {
+    const result = await apiRequest(`/event-registrations/event/${eventId}`);
+    if (!result || !result.data || !result.data.success) {
+        showToast('Failed to load registrations', 'error');
+        return;
+    }
+    
+    const registrations = result.data.data;
+    const stats = result.data.stats;
+    
+    const modalHTML = `
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Registrations for: ${eventTitle}</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="stat-box" style="background: #f3f4f6; padding: 1rem; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #667eea;">${stats.total}</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Total</div>
+                    </div>
+                    <div class="stat-box" style="background: #f3f4f6; padding: 1rem; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #10b981;">${stats.confirmed}</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Confirmed</div>
+                    </div>
+                    <div class="stat-box" style="background: #f3f4f6; padding: 1rem; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #f59e0b;">${stats.pending}</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Pending</div>
+                    </div>
+                </div>
+                
+                ${registrations.length === 0 ? '<p style="text-align: center; color: #6b7280;">No registrations yet</p>' : `
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Age</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${registrations.map(reg => `
+                                    <tr>
+                                        <td>${reg.name}</td>
+                                        <td>${reg.email}</td>
+                                        <td>${reg.phone}</td>
+                                        <td>${reg.age}</td>
+                                        <td><span class="status-badge status-${reg.status}">${reg.status}</span></td>
+                                        <td>${new Date(reg.registeredAt).toLocaleDateString()}</td>
+                                        <td class="table-actions">
+                                            <button class="btn-sm btn-view" onclick="viewRegistrationDetails('${reg._id}')">View</button>
+                                            <button class="btn-sm btn-edit" onclick="updateRegistrationStatus('${reg._id}')">Update</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `}
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('modal-container').innerHTML = modalHTML;
+    document.getElementById('modal-container').style.display = 'flex';
+};
+
+// View Registration Details
+window.viewRegistrationDetails = async (id) => {
+    const result = await apiRequest(`/event-registrations/${id}`);
+    if (!result || !result.data || !result.data.success) {
+        showToast('Failed to load registration details', 'error');
+        return;
+    }
+    
+    const reg = result.data.data;
+    
+    const modalHTML = `
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Registration Details</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="detail-section">
+                    <h3>Participant Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item"><strong>Name:</strong> <span>${reg.name}</span></div>
+                        <div class="detail-item"><strong>Age:</strong> <span>${reg.age}</span></div>
+                        <div class="detail-item"><strong>Email:</strong> <span>${reg.email}</span></div>
+                        <div class="detail-item"><strong>Phone:</strong> <span>${reg.phone}</span></div>
+                        ${reg.guardian ? `<div class="detail-item"><strong>Guardian:</strong> <span>${reg.guardian}</span></div>` : ''}
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Emergency Contact</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item"><strong>Name:</strong> <span>${reg.emergencyContact.name}</span></div>
+                        <div class="detail-item"><strong>Phone:</strong> <span>${reg.emergencyContact.phone}</span></div>
+                        <div class="detail-item"><strong>Relationship:</strong> <span>${reg.emergencyContact.relationship}</span></div>
+                    </div>
+                </div>
+                
+                ${reg.medicalInfo ? `
+                    <div class="detail-section">
+                        <h3>Medical Information</h3>
+                        <p>${reg.medicalInfo}</p>
+                    </div>
+                ` : ''}
+                
+                ${reg.dietaryRestrictions ? `
+                    <div class="detail-section">
+                        <h3>Dietary Restrictions</h3>
+                        <p>${reg.dietaryRestrictions}</p>
+                    </div>
+                ` : ''}
+                
+                ${reg.message ? `
+                    <div class="detail-section">
+                        <h3>Additional Notes</h3>
+                        <p>${reg.message}</p>
+                    </div>
+                ` : ''}
+                
+                <div class="detail-section">
+                    <div class="detail-item"><strong>Status:</strong> <span class="status-badge status-${reg.status}">${reg.status}</span></div>
+                    <div class="detail-item"><strong>Payment Status:</strong> <span class="status-badge status-${reg.paymentStatus}">${reg.paymentStatus}</span></div>
+                    <div class="detail-item"><strong>Registered:</strong> <span>${new Date(reg.registeredAt).toLocaleString()}</span></div>
+                </div>
+                
+                ${reg.notes ? `
+                    <div class="detail-section">
+                        <h3>Admin Notes</h3>
+                        <p>${reg.notes}</p>
+                    </div>
+                ` : ''}
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn-primary" onclick="updateRegistrationStatus('${reg._id}')">Update Status</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('modal-container').innerHTML = modalHTML;
+    document.getElementById('modal-container').style.display = 'flex';
+};
+
+// Update Registration Status
+window.updateRegistrationStatus = async (id) => {
+    const result = await apiRequest(`/event-registrations/${id}`);
+    if (!result || !result.data || !result.data.success) {
+        showToast('Failed to load registration', 'error');
+        return;
+    }
+    
+    const reg = result.data.data;
+    
+    const modalHTML = `
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Update Registration Status</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <form id="update-registration-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Participant: ${reg.name}</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-status">Status</label>
+                        <select id="reg-status" name="status" class="form-control" required>
+                            <option value="pending" ${reg.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="confirmed" ${reg.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                            <option value="cancelled" ${reg.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            <option value="attended" ${reg.status === 'attended' ? 'selected' : ''}>Attended</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-payment">Payment Status</label>
+                        <select id="reg-payment" name="paymentStatus" class="form-control">
+                            <option value="not-required" ${reg.paymentStatus === 'not-required' ? 'selected' : ''}>Not Required</option>
+                            <option value="pending" ${reg.paymentStatus === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="paid" ${reg.paymentStatus === 'paid' ? 'selected' : ''}>Paid</option>
+                            <option value="refunded" ${reg.paymentStatus === 'refunded' ? 'selected' : ''}>Refunded</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-notes">Admin Notes</label>
+                        <textarea id="reg-notes" name="notes" class="form-control" rows="4">${reg.notes || ''}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.getElementById('modal-container').innerHTML = modalHTML;
+    document.getElementById('modal-container').style.display = 'flex';
+    
+    document.getElementById('update-registration-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const status = document.getElementById('reg-status').value;
+        const paymentStatus = document.getElementById('reg-payment').value;
+        const notes = document.getElementById('reg-notes').value;
+        
+        const updateResult = await apiRequest(`/event-registrations/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status, paymentStatus, notes })
+        });
+        
+        if (updateResult && updateResult.data && updateResult.data.success) {
+            showToast('Registration updated successfully', 'success');
+            closeModal();
+        } else {
+            showToast(updateResult.data?.message || 'Failed to update registration', 'error');
+        }
+    });
 };
 
 window.editEvent = async (id) => {
@@ -1461,13 +2124,12 @@ async function loadAdmins(page = 1, role = '') {
     
     let admins = result.data.admins || [];
     
+    // Update badge count with total (not filtered count)
+    document.getElementById('admins-count').textContent = result.data.total || admins.length;
     
     if (role) {
         admins = admins.filter(admin => admin.role === role);
     }
-    
-    
-    document.getElementById('admins-count').textContent = admins.length;
     
     if (admins.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center">No admins found</td></tr>';

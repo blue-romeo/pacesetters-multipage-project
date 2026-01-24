@@ -1,0 +1,145 @@
+/**
+ * Containers & Layout Utilities
+ */
+
+/* ========== MAIN CONTAINER ========== */
+.container {
+    width: 100%;
+    max-width: var(--max-width-xl, 1280px);
+    margin: 0 auto;
+    padding: 0 var(--spacing-md, 1rem);
+}
+
+.container-sm {
+    max-width: var(--max-width-sm, 640px);
+}
+
+.container-md {
+    max-width: var(--max-width-md, 768px);
+}
+
+.container-lg {
+    max-width: var(--max-width-lg, 1024px);
+}
+
+/* ========== SECTIONS ========== */
+section {
+    padding: var(--spacing-3xl, 4rem) var(--spacing-md, 1rem);
+}
+
+section.hero {
+    padding: var(--spacing-4xl, 6rem) var(--spacing-md, 1rem) var(--spacing-3xl, 4rem);
+}
+
+/* ========== PAGE HEADER ========== */
+.page-header {
+    background: linear-gradient(135deg, var(--color-green) 0%, #004d28 100%);
+    color: var(--color-white);
+    padding: calc(var(--header-height, 70px) + var(--spacing-3xl, 4rem)) var(--spacing-md, 1rem) var(--spacing-3xl, 4rem);
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: var(--spacing-md, 1rem);
+}
+
+.page-header p {
+    font-size: var(--font-size-lg, 1.125rem);
+    opacity: 0.95;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ========== GRID LAYOUTS ========== */
+.grid {
+    display: grid;
+    gap: var(--spacing-xl, 2rem);
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+/* ========== FLEX LAYOUTS ========== */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-sm {
+    gap: var(--spacing-sm, 0.5rem);
+}
+
+.gap-md {
+    gap: var(--spacing-md, 1rem);
+}
+
+.gap-lg {
+    gap: var(--spacing-lg, 1.5rem);
+}
+
+/* ========== CONTENT SPLIT ========== */
+.content-split {
+    display: grid;
+    gap: var(--spacing-2xl, 3rem);
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .content-split {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.content-split.reverse {
+    direction: rtl;
+}
+
+.content-split.reverse > * {
+    direction: ltr;
+}
+
+@media (min-width: 768px) {
+    .content-split.reverse {
+        direction: ltr;
+    }
+    
+    .content-split.reverse > *:first-child {
+        order: 2;
+    }
+}
+
+/* ========== RESPONSIVE SPACING ========== */
+@media (max-width: 768px) {
+    section {
+        padding: var(--spacing-2xl, 3rem) var(--spacing-md, 1rem);
+    }
+    
+    .page-header {
+        padding: calc(var(--header-height, 70px) + var(--spacing-2xl, 3rem)) var(--spacing-md, 1rem) var(--spacing-2xl, 3rem);
+    }
+}

@@ -1,0 +1,28 @@
+/**
+ * Pathfinder Club - Main CSS Entry Point
+ * 
+ * This file imports all modular CSS files in the correct cascade order:
+ * 1. Variables - Design tokens (colors, spacing, typography)
+ * 2. Base - Reset & element defaults
+ * 3. Layout - Header, footer, containers
+ * 4. Components - Buttons, cards, forms, modals
+ * 5. Utilities - Helper classes & animations
+ */
+
+/* ========== CORE STYLES ========== */
+@import url('variables.css');
+@import url('base.css');
+
+/* ========== LAYOUT ========== */
+@import url('layout/header.css');
+@import url('layout/footer.css');
+@import url('layout/containers.css');
+
+/* ========== COMPONENTS ========== */
+@import url('components/buttons.css');
+@import url('components/cards.css');
+@import url('components/forms.css');
+@import url('components/modals.css');
+
+/* ========== UTILITIES ========== */
+@import url('utilities.css');

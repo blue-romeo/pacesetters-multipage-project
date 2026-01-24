@@ -81,8 +81,10 @@ app.use('/api/contacts', require('./routes/contactRoutes'));
 app.use('/api/newsletter', require('./routes/newsletterRoutes'));
 app.use('/api/donations', require('./routes/donationRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
+app.use('/api/event-registrations', require('./routes/eventRegistrationRoutes'));
 app.use('/api/gallery', require('./routes/galleryRoutes'));
 app.use('/api/leaders', require('./routes/leaderRoutes'));
+app.use('/api/volunteers', require('./routes/volunteerRoutes'));
 
 
 app.get('/', (req, res) => {
@@ -95,8 +97,10 @@ app.get('/', (req, res) => {
       newsletter: '/api/newsletter',
       donations: '/api/donations',
       events: '/api/events',
+      eventRegistrations: '/api/event-registrations',
       gallery: '/api/gallery',
       leaders: '/api/leaders',
+      volunteers: '/api/volunteers',
       health: '/health'
     }
   });

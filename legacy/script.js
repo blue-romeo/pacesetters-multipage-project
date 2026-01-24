@@ -10,42 +10,16 @@ Version: 2.0 - Multi-Page
 */
 
 // ========== CACHING UTILITIES ========== 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+// Cache disabled for real-time updates between admin and frontend
+const CACHE_DURATION = 0; // Caching disabled for real-time updates
 
 const CacheManager = {
     set(key, data, duration = CACHE_DURATION) {
-        const cacheData = {
-            data: data,
-            timestamp: Date.now(),
-            duration: duration
-        };
-        try {
-            localStorage.setItem(`pathfinders_${key}`, JSON.stringify(cacheData));
-        } catch (e) {
-            console.warn('Cache storage failed:', e);
-        }
+        return;
     },
     
     get(key) {
-        try {
-            const cached = localStorage.getItem(`pathfinders_${key}`);
-            if (!cached) return null;
-            
-            const cacheData = JSON.parse(cached);
-            const now = Date.now();
-            
-            // Check if cache is still valid
-            if (now - cacheData.timestamp < cacheData.duration) {
-                return cacheData.data;
-            }
-            
-            // Cache expired, remove it
-            this.remove(key);
-            return null;
-        } catch (e) {
-            console.warn('Cache retrieval failed:', e);
-            return null;
-        }
+        return null;
     },
     
     remove(key) {
@@ -72,22 +46,19 @@ const CacheManager = {
 
 // ========== OPTIMIZED API FETCH ========== 
 async function fetchWithCache(url, cacheKey, cacheDuration = CACHE_DURATION) {
-    // Check cache first
-    const cached = CacheManager.get(cacheKey);
-    if (cached) {
-        console.log(`📦 Cache hit: ${cacheKey}`);
-        return cached;
-    }
     
-    // Fetch from API
-    console.log(`🌐 Fetching: ${cacheKey}`);
+    console.log(`🌐 Fetching fresh: ${cacheKey}`);
     try {
-        const response = await fetch(url);
-        const result = await response.json();
+        const separator = url.includes('?') ? '&' : '?';
+        const freshUrl = `${url}${separator}_t=${Date.now()}`;
         
-        if (result.success) {
-            CacheManager.set(cacheKey, result, cacheDuration);
-        }
+        const response = await fetch(freshUrl, {
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        });
+        const result = await response.json();
         
         return result;
     } catch (error) {
@@ -96,8 +67,63 @@ async function fetchWithCache(url, cacheKey, cacheDuration = CACHE_DURATION) {
     }
 }
 
+// ========== LOAD HEADER AND FOOTER COMPONENTS ========== 
+async function loadComponent(componentPath, targetSelector) {
+    try {
+        const response = await fetch(componentPath);
+        if (!response.ok) throw new Error(`Failed to load ${componentPath}`);
+        const html = await response.text();
+        const targetElement = document.querySelector(targetSelector);
+        if (targetElement) {
+            targetElement.outerHTML = html;
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error(`Error loading component ${componentPath}:`, error);
+        return false;
+    }
+}
+
+function setActiveNavLink() {
+    // Get current page filename
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const pageName = currentPage.replace('.html', '');
+    
+    // Set active class on current page link
+    const navLinks = document.querySelectorAll('.nav-links a[data-page]');
+    navLinks.forEach(link => {
+        const linkPage = link.getAttribute('data-page');
+        if (linkPage === pageName || (pageName === '' && linkPage === 'index')) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+}
+
+async function initializeComponents() {
+    // Load header and footer
+    const headerLoaded = await loadComponent('components/header.html', '#header-placeholder');
+    const footerLoaded = await loadComponent('components/footer.html', '#footer-placeholder');
+    
+    if (headerLoaded && footerLoaded) {
+        // Set active navigation link
+        setActiveNavLink();
+        
+        // Re-initialize mobile navigation after header loads
+        initializeMobileNav();
+    }
+}
+
+// Run component initialization on page load
+if (document.querySelector('#header-placeholder') && document.querySelector('#footer-placeholder')) {
+    document.addEventListener('DOMContentLoaded', initializeComponents);
+}
+
 // ========== MOBILE NAVIGATION ========== 
-const hamburger = document.getElementById('hamburger');
+function initializeMobileNav() {
+    const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('navLinks');
 
 if (hamburger && navLinks) {
@@ -125,6 +151,7 @@ if (hamburger && navLinks) {
             hamburger.setAttribute('aria-expanded', 'false');
         }
     });
+}
 }
 
 // ========== TESTIMONIALS SLIDER ========== 
@@ -432,7 +459,7 @@ async function loadEventsFromAPI() {
     if (!eventsList) return;
 
     try {
-        const result = await fetchWithCache(API_CONFIG.getFullURL(`/events?ts=${Date.now()}`), 'events', 0); // no cache to reflect admin updates
+        const result = await fetchWithCache(API_CONFIG.getFullURL('/events'), 'events'); // real-time updates enabled
         
         if (result.success && result.data && result.data.length > 0) {
             // Transform API data to match eventsData format
@@ -495,6 +522,23 @@ function renderEvents(events) {
             timeDisplay = `${startTime} - ${endTime}`;
         }
         
+        // Check if registration is open
+        const now = new Date();
+        const isRegistrationOpen = event.requiresRegistration && 
+                                   event.registrationDeadline && 
+                                   new Date(event.registrationDeadline) > now &&
+                                   eventDate > now;
+        
+        // Registration button
+        let registrationButton = '';
+        if (event.requiresRegistration && status === 'upcoming') {
+            if (isRegistrationOpen) {
+                registrationButton = `<a href="event-registration.html?event=${event._id}" class="register-btn">Register Now</a>`;
+            } else if (event.registrationDeadline && new Date(event.registrationDeadline) < now) {
+                registrationButton = `<button class="register-btn" disabled style="opacity: 0.6; cursor: not-allowed;">Registration Closed</button>`;
+            }
+        }
+        
         return `
             <article class="event-card" data-status="${status}" data-date="${event.date}">
                 <div class="event-content">
@@ -526,8 +570,13 @@ function renderEvents(events) {
                             </div>
                         </div>
                         <p class="event-description">${event.description}</p>
+                        ${event.cost > 0 ? `<p class="event-cost"><strong>Cost:</strong> KES ${event.cost.toLocaleString()}</p>` : ''}
+                        ${event.registrationDeadline && isRegistrationOpen ? `<p class="event-deadline"><strong>Register by:</strong> ${new Date(event.registrationDeadline).toLocaleDateString('en-US', dateOptions)}</p>` : ''}
                     </div>
-                    <button class="add-calendar-btn" data-event="${index}">Add to Calendar</button>
+                    <div class="event-actions">
+                        ${registrationButton}
+                        <button class="add-calendar-btn" data-event="${index}">Add to Calendar</button>
+                    </div>
                 </div>
             </article>
         `;
@@ -602,7 +651,7 @@ async function loadLeadersFromAPI() {
     if (!leadershipGrid) return;
 
     try {
-        const result = await fetchWithCache(API_CONFIG.getFullURL('/leaders'), 'leaders', 10 * 60 * 1000); // 10 min cache
+        const result = await fetchWithCache(API_CONFIG.getFullURL('/leaders'), 'leaders'); // real-time updates enabled
         
         if (result.success && result.data && result.data.length > 0) {
             leadershipGrid.innerHTML = result.data.map(leader => `
@@ -639,7 +688,7 @@ async function loadGalleryFromAPI() {
     if (!galleryGrid) return;
 
     try {
-        const result = await fetchWithCache(API_CONFIG.getFullURL('/gallery'), 'gallery', 10 * 60 * 1000); // 10 min cache
+        const result = await fetchWithCache(API_CONFIG.getFullURL('/gallery'), 'gallery'); // real-time updates enabled
         
         if (result.success && result.data && result.data.length > 0) {
             galleryData = result.data;
@@ -675,7 +724,7 @@ async function loadHomeUpcomingEvents() {
     if (!eventsPreview) return;
 
     try {
-        const result = await fetchWithCache(API_CONFIG.getFullURL(`/events?upcoming=true&limit=3&ts=${Date.now()}`), 'home_events', 0); // no cache to reflect admin updates
+        const result = await fetchWithCache(API_CONFIG.getFullURL('/events?upcoming=true&limit=3'), 'home_events'); // real-time updates enabled
         
         if (result.success && result.data && result.data.length > 0) {
             eventsPreview.innerHTML = result.data.map((event, index) => {

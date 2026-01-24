@@ -86,6 +86,13 @@
                 <span>Leaders</span>
                 <span class="badge" id="leaders-count">0</span>
             </a>
+            <a href="#volunteers" class="nav-item" data-section="volunteers">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span>Volunteers</span>
+                <span class="badge" id="volunteers-count">0</span>
+            </a>
             <a href="#admins" class="nav-item" data-section="admins" id="admins-nav">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -436,6 +443,13 @@
                         <option value="ceremonies">Ceremonies</option>
                         <option value="community-service">Community Service</option>
                     </select>
+                    <button class="btn-danger" id="delete-selected-gallery-btn" style="display: none;" onclick="deleteSelectedGalleryItems()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        Delete Selected (<span id="selected-count">0</span>)
+                    </button>
                     <button class="btn-primary" id="upload-gallery-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -445,6 +459,12 @@
                         Upload Image
                     </button>
                 </div>
+            </div>
+            <div class="gallery-selection-bar" id="gallery-selection-bar" style="display: none; padding: 12px 0; margin-bottom: 16px;">
+                <label class="checkbox-label" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="select-all-gallery" style="cursor: pointer;">
+                    <span style="font-weight: 500;">Select All</span>
+                </label>
             </div>
             <div class="gallery-grid" id="gallery-grid">
                 <div class="loading">Loading gallery...</div>
@@ -493,6 +513,56 @@
                     </table>
                 </div>
                 <div class="pagination" id="leaders-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Volunteers Section -->
+        <section id="section-volunteers" class="content-section">
+            <div class="section-header">
+                <h2>Volunteer Applications</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search volunteers..." class="search-input" id="search-volunteers">
+                    <select class="filter-select" id="filter-volunteers-status">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="reviewed">Reviewed</option>
+                        <option value="approved">Approved</option>
+                        <option value="active">Active</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <button class="btn-primary" id="export-volunteers">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="data-table" id="volunteers-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Age</th>
+                                <th>Interests</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="volunteers-tbody">
+                            <tr>
+                                <td colspan="8" class="loading">Loading volunteers...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="volunteers-pagination"></div>
             </div>
         </section>
 
@@ -545,7 +615,10 @@
     <!-- Modals will be added dynamically -->
     <div class="modal" id="modal-container"></div>
 
+    <!-- API Configuration (legacy global) -->
     <script src="api-config.js"></script>
-    <script src="admin.js"></script>
+    
+    <!-- Modular Admin Dashboard -->
+    <script type="module" src="js/admin/admin-main.js"></script>
 </body>
 </html>
