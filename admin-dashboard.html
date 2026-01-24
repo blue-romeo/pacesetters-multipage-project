@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Pathfinders Club</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body class="admin-dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">🏕️</div>
+            <h2>Pathfinders</h2>
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#contacts" class="nav-item" data-section="contacts">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>Contacts</span>
+                <span class="badge" id="contacts-count">0</span>
+            </a>
+            <a href="#newsletter" class="nav-item" data-section="newsletter">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span>Newsletter</span>
+                <span class="badge" id="newsletter-count">0</span>
+            </a>
+            <a href="#donations" class="nav-item" data-section="donations">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span>Donations</span>
+                <span class="badge" id="donations-count">0</span>
+            </a>
+            <a href="#events" class="nav-item" data-section="events">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span>Events</span>
+                <span class="badge" id="events-count">0</span>
+            </a>
+            <a href="#gallery" class="nav-item" data-section="gallery">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>Gallery</span>
+                <span class="badge" id="gallery-count">0</span>
+            </a>
+            <a href="#leaders" class="nav-item" data-section="leaders">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>Leaders</span>
+                <span class="badge" id="leaders-count">0</span>
+            </a>
+            <a href="#volunteers" class="nav-item" data-section="volunteers">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span>Volunteers</span>
+                <span class="badge" id="volunteers-count">0</span>
+            </a>
+            <a href="#admins" class="nav-item" data-section="admins" id="admins-nav">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    <circle cx="17" cy="7" r="1"/>
+                    <circle cx="9" cy="7" r="1"/>
+                </svg>
+                <span>Admins</span>
+                <span class="badge" id="admins-count">0</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-profile" id="admin-profile" title="Click to edit profile">
+                <div class="admin-avatar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <div class="admin-info">
+                    <strong id="admin-name">Admin</strong>
+                    <small id="admin-role">Administrator</small>
+                </div>
+                <svg class="profile-edit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </div>
+            <button class="btn-logout" id="logout-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <h1 id="page-title">Dashboard</h1>
+            <div class="header-actions">
+                <button class="btn-icon" id="refresh-btn" title="Refresh Data">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <polyline points="1 20 1 14 7 14"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                </button>
+                <button class="btn-icon" id="notifications-btn" title="Notifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="notification-dot"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        <section id="section-dashboard" class="content-section active">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="stat-contacts">0</h3>
+                        <p>Total Contacts</p>
+                        <span class="stat-change positive">+12% this month</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="stat-subscribers">0</h3>
+                        <p>Newsletter Subscribers</p>
+                        <span class="stat-change positive">+8% this month</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="stat-donations">KES 0</h3>
+                        <p>Total Donations</p>
+                        <span class="stat-change positive">+25% this month</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="stat-events">0</h3>
+                        <p>Upcoming Events</p>
+                        <span class="stat-change">Next: TBD</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Recent Contacts</h2>
+                        <a href="#contacts" class="btn-link" data-section="contacts">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div id="recent-contacts" class="recent-list">
+                            <div class="loading">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Recent Donations</h2>
+                        <a href="#donations" class="btn-link" data-section="donations">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div id="recent-donations" class="recent-list">
+                            <div class="loading">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contacts Section -->
+        <section id="section-contacts" class="content-section">
+            <div class="section-header">
+                <h2>Contact Applications</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search contacts..." class="search-input" id="search-contacts">
+                    <select class="filter-select" id="filter-contacts-status">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="reviewed">Reviewed</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <button class="btn-primary" id="export-contacts">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="data-table" id="contacts-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Age</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contacts-tbody">
+                            <tr>
+                                <td colspan="7" class="loading">Loading contacts...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="contacts-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Newsletter Section -->
+        <section id="section-newsletter" class="content-section">
+            <div class="section-header">
+                <h2>Newsletter Subscribers</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search subscribers..." class="search-input" id="search-newsletter">
+                    <select class="filter-select" id="filter-newsletter-status">
+                        <option value="">All</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                    <button class="btn-primary" id="export-newsletter">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="data-table" id="newsletter-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Subscribed Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="newsletter-tbody">
+                            <tr>
+                                <td colspan="5" class="loading">Loading subscribers...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="newsletter-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Donations Section -->
+        <section id="section-donations" class="content-section">
+            <div class="section-header">
+                <h2>Donations</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search donations..." class="search-input" id="search-donations">
+                    <select class="filter-select" id="filter-donations-status">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                    <button class="btn-primary" id="export-donations">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="data-table" id="donations-table">
+                        <thead>
+                            <tr>
+                                <th>Donor</th>
+                                <th>Email</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                                <th>Purpose</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donations-tbody">
+                            <tr>
+                                <td colspan="8" class="loading">Loading donations...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="donations-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section id="section-events" class="content-section">
+            <div class="section-header">
+                <h2>Events Management</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search events..." class="search-input" id="search-events">
+                    <button class="btn-primary" id="create-event-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Create Event
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="data-table" id="events-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Start Date</th>
+                                <th>Location</th>
+                                <th>Participants</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="events-tbody">
+                            <tr>
+                                <td colspan="7" class="loading">Loading events...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="events-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section id="section-gallery" class="content-section">
+            <div class="section-header">
+                <h2>Gallery Management</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search gallery..." class="search-input" id="search-gallery">
+                    <select class="filter-select" id="filter-gallery-category">
+                        <option value="">All Categories</option>
+                        <option value="camping">Camping</option>
+                        <option value="activities">Activities</option>
+                        <option value="ceremonies">Ceremonies</option>
+                        <option value="community-service">Community Service</option>
+                    </select>
+                    <button class="btn-danger" id="delete-selected-gallery-btn" style="display: none;" onclick="deleteSelectedGalleryItems()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        Delete Selected (<span id="selected-count">0</span>)
+                    </button>
+                    <button class="btn-primary" id="upload-gallery-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Upload Image
+                    </button>
+                </div>
+            </div>
+            <div class="gallery-selection-bar" id="gallery-selection-bar" style="display: none; padding: 12px 0; margin-bottom: 16px;">
+                <label class="checkbox-label" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="select-all-gallery" style="cursor: pointer;">
+                    <span style="font-weight: 500;">Select All</span>
+                </label>
+            </div>
+            <div class="gallery-grid" id="gallery-grid">
+                <div class="loading">Loading gallery...</div>
+            </div>
+            <div class="pagination" id="gallery-pagination"></div>
+        </section>
+
+        <!-- Leaders Section -->
+        <section id="section-leaders" class="content-section">
+            <div class="section-header">
+                <h2>Leaders Management</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search leaders..." class="search-input" id="search-leaders">
+                    <select class="filter-select" id="filter-leaders-status">
+                        <option value="">All</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                    <button class="btn-primary" id="create-leader-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add Leader
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="data-table" id="leaders-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Email</th>
+                                <th>Order</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaders-tbody">
+                            <tr>
+                                <td colspan="6" class="loading">Loading leaders...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="leaders-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Volunteers Section -->
+        <section id="section-volunteers" class="content-section">
+            <div class="section-header">
+                <h2>Volunteer Applications</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search volunteers..." class="search-input" id="search-volunteers">
+                    <select class="filter-select" id="filter-volunteers-status">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="reviewed">Reviewed</option>
+                        <option value="approved">Approved</option>
+                        <option value="active">Active</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <button class="btn-primary" id="export-volunteers">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="data-table" id="volunteers-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Age</th>
+                                <th>Interests</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="volunteers-tbody">
+                            <tr>
+                                <td colspan="8" class="loading">Loading volunteers...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="volunteers-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Admins Section -->
+        <section id="section-admins" class="content-section">
+            <div class="section-header">
+                <h2>Admin User Management</h2>
+                <div class="section-actions">
+                    <input type="search" placeholder="Search admins..." class="search-input" id="search-admins">
+                    <select class="filter-select" id="filter-admins-role">
+                        <option value="">All Roles</option>
+                        <option value="super-admin">Super Admin</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <button class="btn-primary" id="create-admin-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add Admin
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="data-table" id="admins-table">
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admins-tbody">
+                            <tr>
+                                <td colspan="7" class="loading">Loading admins...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="admins-pagination"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals will be added dynamically -->
+    <div class="modal" id="modal-container"></div>
+
+    <!-- API Configuration (legacy global) -->
+    <script src="api-config.js"></script>
+    
+    <!-- Modular Admin Dashboard -->
+    <script type="module" src="js/admin/admin-main.js"></script>
+</body>
+</html>

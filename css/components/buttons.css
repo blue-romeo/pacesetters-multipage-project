@@ -1,0 +1,123 @@
+/**
+ * Button Components
+ */
+
+/* ========== PRIMARY BUTTON ========== */
+.btn {
+    display: inline-block;
+    padding: var(--spacing-md, 1rem) var(--spacing-xl, 2rem);
+    background: var(--color-gold);
+    color: var(--color-green);
+    border: none;
+    border-radius: var(--border-radius-full, 50px);
+    font-size: var(--font-size-lg, 1.125rem);
+    font-weight: var(--font-weight-bold, 700);
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: all var(--transition-base);
+}
+
+.btn:hover,
+.btn:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ========== BUTTON VARIANTS ========== */
+.btn-primary {
+    background: var(--color-gold);
+    color: var(--color-green);
+}
+
+.btn-secondary {
+    background: var(--color-green);
+    color: var(--color-white);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--color-gold);
+    color: var(--color-gold);
+}
+
+.btn-outline:hover {
+    background: var(--color-gold);
+    color: var(--color-green);
+}
+
+/* ========== BUTTON SIZES ========== */
+.btn-sm {
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+    font-size: var(--font-size-sm, 0.875rem);
+}
+
+.btn-lg {
+    padding: var(--spacing-lg, 1.5rem) var(--spacing-2xl, 3rem);
+    font-size: var(--font-size-xl, 1.25rem);
+}
+
+/* ========== FULL WIDTH ========== */
+.btn-block {
+    width: 100%;
+    display: block;
+}
+
+/* ========== ICON BUTTONS ========== */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm, 0.5rem);
+}
+
+/* ========== DOWNLOADS BUTTON ========== */
+.downloads {
+    padding: 3px;
+    border: var(--color-gold) 3px solid;
+    border-radius: var(--border-radius-full, 50px);
+    color: var(--color-green);
+    margin: var(--spacing-sm, 10px);
+}
+
+/* ========== SCROLL TO TOP BUTTON ========== */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    background: var(--color-gold);
+    color: var(--color-green);
+    border: none;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+    z-index: var(--z-sticky, 1020);
+}
+
+.scroll-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-top-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+}
+
+.scroll-top-btn svg {
+    width: 24px;
+    height: 24px;
+}

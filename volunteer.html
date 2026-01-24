@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Become a volunteer with Pathfinders Club - share your skills and passion">
+    <title>Volunteer Registration - Pathfinders Club</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Become a Volunteer</h1>
+                <p>Share your skills and passion with our Pathfinders</p>
+            </div>
+        </section>
+
+        <section class="section section-gray">
+            <div class="container form-container">
+                <h2 class="section-title">Volunteer Registration</h2>
+                <p class="form-intro">Thank you for your interest in volunteering with the Pace Setters Pathfinder Club! 
+                    Your time, skills, and passion can make a lasting impact on the lives of young people in our community. 
+                    Whether you want to lead honor classes, chaperone trips, assist with administrative tasks, or mentor 
+                    individual Pathfinders, we have opportunities that match your interests and availability.</p>
+                <p class="form-intro">Please complete the form below, and we'll be in touch to discuss how you can contribute 
+                    to our mission of developing character and leadership in youth.</p>
+                
+                <form id="volunteer-form" class="contact-form" novalidate>
+                    <h3 style="margin-top: 2rem; color: var(--color-green);">Personal Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="name">Full Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" required aria-required="true">
+                        <span class="error-message" id="name-error" role="alert"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" required aria-required="true">
+                            <span class="error-message" id="email-error" role="alert"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone <span class="required">*</span></label>
+                            <input type="tel" id="phone" name="phone" required aria-required="true">
+                            <span class="error-message" id="phone-error" role="alert"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="age">Age <span class="required">*</span></label>
+                            <input type="number" id="age" name="age" min="18" max="100" required aria-required="true">
+                            <span class="error-message" id="age-error" role="alert"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="occupation">Occupation</label>
+                            <input type="text" id="occupation" name="occupation">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <input type="text" id="address" name="address">
+                    </div>
+
+                    <h3 style="margin-top: 2rem; color: var(--color-green);">Volunteer Interests</h3>
+
+                    <div class="form-group">
+                        <label>Areas of Interest <span class="required">*</span></label>
+                        <p style="font-size: 0.9rem; color: var(--color-gray-600); margin-bottom: 0.5rem;">Select all that apply:</p>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="honor-classes">
+                                <span>Lead Honor Classes</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="camping-trips">
+                                <span>Chaperone Camping Trips</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="administrative">
+                                <span>Administrative Tasks</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="mentoring">
+                                <span>Mentoring Pathfinders</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="fundraising">
+                                <span>Fundraising Events</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="community-service">
+                                <span>Community Service Projects</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="other">
+                                <span>Other (specify below)</span>
+                            </label>
+                        </div>
+                        <span class="error-message" id="interests-error" role="alert"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills">Skills & Expertise</label>
+                        <textarea id="skills" name="skills" rows="3" placeholder="Please list any relevant skills, certifications, or areas of expertise (e.g., first aid, outdoor survival, arts & crafts, music, sports, etc.)"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="availability">Availability <span class="required">*</span></label>
+                        <textarea id="availability" name="availability" rows="3" required aria-required="true" placeholder="Please describe your availability (e.g., weekends only, specific days of the week, frequency)"></textarea>
+                        <span class="error-message" id="availability-error" role="alert"></span>
+                    </div>
+
+                    <h3 style="margin-top: 2rem; color: var(--color-green);">Experience & Background</h3>
+
+                    <div class="form-group">
+                        <label for="experience">Previous Volunteer Experience</label>
+                        <textarea id="experience" name="experience" rows="4" placeholder="Please describe any previous volunteer work or experience working with youth"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Background Check Consent <span class="required">*</span></label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="background-check" name="backgroundCheck" required aria-required="true">
+                                <span>I consent to a background check as required for working with youth <span class="required">*</span></span>
+                            </label>
+                        </div>
+                        <span class="error-message" id="background-check-error" role="alert"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Additional Information</label>
+                        <textarea id="message" name="message" rows="4" placeholder="Is there anything else you'd like us to know?"></textarea>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="consent" name="consent" required aria-required="true">
+                        <label for="consent" class="checkbox-label">
+                            I agree to the collection and use of my personal information for volunteer coordination purposes and understand that all information will be kept confidential. <span class="required">*</span>
+                        </label>
+                        <span class="error-message" id="consent-error" role="alert"></span>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Submit Volunteer Application</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Success Modal -->
+        <div class="modal" id="success-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-content">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <h3 id="modal-title">Thank You for Volunteering!</h3>
+                <p>Your volunteer application has been submitted successfully. We'll review your information and contact you soon!</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script type="module">
+        import API_CONFIG from './api-config.js';
+
+        // Load header and footer
+        async function loadComponents() {
+            try {
+                const [headerResponse, footerResponse] = await Promise.all([
+                    fetch('components/header.html'),
+                    fetch('components/footer.html')
+                ]);
+
+                const headerHTML = await headerResponse.text();
+                const footerHTML = await footerResponse.text();
+
+                document.getElementById('header-placeholder').innerHTML = headerHTML;
+                document.getElementById('footer-placeholder').innerHTML = footerHTML;
+
+                // Initialize mobile menu after header is loaded
+                initializeMobileMenu();
+            } catch (error) {
+                console.error('Error loading components:', error);
+            }
+        }
+
+        function initializeMobileMenu() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+
+            if (menuToggle && navMenu) {
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            }
+        }
+
+        // Form validation and submission
+        const form = document.getElementById('volunteer-form');
+        const successModal = document.getElementById('success-modal');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
+
+            // Validate form
+            let isValid = true;
+
+            // Name validation
+            const name = document.getElementById('name');
+            if (!name.value.trim()) {
+                showError('name', 'Full name is required');
+                isValid = false;
+            }
+
+            // Email validation
+            const email = document.getElementById('email');
+            const emailRegex = /^\S+@\S+\.\S+$/;
+            if (!email.value.trim()) {
+                showError('email', 'Email is required');
+                isValid = false;
+            } else if (!emailRegex.test(email.value)) {
+                showError('email', 'Please provide a valid email address');
+                isValid = false;
+            }
+
+            // Phone validation
+            const phone = document.getElementById('phone');
+            if (!phone.value.trim()) {
+                showError('phone', 'Phone number is required');
+                isValid = false;
+            }
+
+            // Age validation
+            const age = document.getElementById('age');
+            if (!age.value) {
+                showError('age', 'Age is required');
+                isValid = false;
+            } else if (age.value < 18) {
+                showError('age', 'Volunteers must be at least 18 years old');
+                isValid = false;
+            }
+
+            // Interests validation
+            const interests = document.querySelectorAll('input[name="interests"]:checked');
+            if (interests.length === 0) {
+                showError('interests', 'Please select at least one area of interest');
+                isValid = false;
+            }
+
+            // Availability validation
+            const availability = document.getElementById('availability');
+            if (!availability.value.trim()) {
+                showError('availability', 'Please describe your availability');
+                isValid = false;
+            }
+
+            // Background check consent validation
+            const backgroundCheck = document.getElementById('background-check');
+            if (!backgroundCheck.checked) {
+                showError('background-check', 'Background check consent is required');
+                isValid = false;
+            }
+
+            // Consent validation
+            const consent = document.getElementById('consent');
+            if (!consent.checked) {
+                showError('consent', 'You must agree to the terms');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            // Collect selected interests
+            const selectedInterests = Array.from(interests).map(cb => cb.value);
+
+            // Prepare form data
+            const formData = {
+                name: name.value.trim(),
+                email: email.value.trim(),
+                phone: phone.value.trim(),
+                age: parseInt(age.value),
+                occupation: document.getElementById('occupation').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                interests: selectedInterests,
+                skills: document.getElementById('skills').value.trim(),
+                availability: availability.value.trim(),
+                experience: document.getElementById('experience').value.trim(),
+                backgroundCheck: backgroundCheck.checked,
+                message: document.getElementById('message').value.trim(),
+                consent: consent.checked
+            };
+
+            // Submit form
+            try {
+                const submitBtn = form.querySelector('.submit-btn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/volunteers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show success modal
+                    successModal.style.display = 'flex';
+                    form.reset();
+                    
+                    // Hide modal after 3 seconds
+                    setTimeout(() => {
+                        successModal.style.display = 'none';
+                    }, 3000);
+                } else {
+                    // Handle error
+                    alert(data.message || 'An error occurred. Please try again.');
+                }
+
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Volunteer Application';
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('An error occurred. Please try again later.');
+                const submitBtn = form.querySelector('.submit-btn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Volunteer Application';
+            }
+        });
+
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.parentElement.classList.add('error');
+            }
+        }
+
+        // Close modal when clicking outside
+        successModal.addEventListener('click', (e) => {
+            if (e.target === successModal) {
+                successModal.style.display = 'none';
+            }
+        });
+
+        // Load components when page loads
+        loadComponents();
+    </script>
+</body>
+</html>

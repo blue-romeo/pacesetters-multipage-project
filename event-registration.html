@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Register for Pathfinders Club events">
+    <title>Event Registration - Pathfinders Club</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Event Registration</h1>
+                <p id="event-subtitle">Register for this event</p>
+            </div>
+        </section>
+
+        <section class="section section-gray">
+            <div class="container form-container">
+                <div id="event-info-card" class="event-info-card" style="display: none;">
+                    <h2 id="event-title"></h2>
+                    <div class="event-info-details">
+                        <div class="info-item">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span id="event-date"></span>
+                        </div>
+                        <div class="info-item">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            <span id="event-location"></span>
+                        </div>
+                        <div class="info-item" id="event-cost-item" style="display: none;">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="6" x2="12" y2="10"/>
+                                <line x1="12" y1="14" x2="12" y2="14.01"/>
+                            </svg>
+                            <span id="event-cost"></span>
+                        </div>
+                    </div>
+                    <p id="event-description"></p>
+                </div>
+
+                <h2 class="section-title">Registration Form</h2>
+                <p class="form-intro">Please fill out this form to register for the event. All fields marked with <span class="required">*</span> are required.</p>
+                
+                <form id="registration-form" class="contact-form" novalidate>
+                    <h3 style="margin-top: 2rem; color: var(--color-green);">Participant Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="name">Full Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" required aria-required="true">
+                        <span class="error-message" id="name-error" role="alert"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="guardian">Parent/Guardian Name (if under 18)</label>
+                        <input type="text" id="guardian" name="guardian">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" required aria-required="true">
+                            <span class="error-message" id="email-error" role="alert"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone <span class="required">*</span></label>
+                            <input type="tel" id="phone" name="phone" required aria-required="true">
+                            <span class="error-message" id="phone-error" role="alert"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age <span class="required">*</span></label>
+                        <input type="number" id="age" name="age" min="10" max="15" required aria-required="true">
+                        <span class="error-message" id="age-error" role="alert"></span>
+                    </div>
+
+                    <h3 style="margin-top: 2rem; color: var(--color-green);">Emergency Contact</h3>
+
+                    <div class="form-group">
+                        <label for="emergency-name">Emergency Contact Name <span class="required">*</span></label>
+                        <input type="text" id="emergency-name" name="emergencyName" required aria-required="true">
+                        <span class="error-message" id="emergency-name-error" role="alert"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="emergency-phone">Emergency Contact Phone <span class="required">*</span></label>
+                            <input type="tel" id="emergency-phone" name="emergencyPhone" required aria-required="true">
+                            <span class="error-message" id="emergency-phone-error" role="alert"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="emergency-relationship">Relationship <span class="required">*</span></label>
+                            <input type="text" id="emergency-relationship" name="emergencyRelationship" required aria-required="true" placeholder="e.g., Parent, Guardian, Sibling">
+                            <span class="error-message" id="emergency-relationship-error" role="alert"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 2rem; color: var(--color-green);">Health & Dietary Information</h3>
+
+                    <div class="form-group">
+                        <label for="medical-info">Medical Conditions or Allergies</label>
+                        <textarea id="medical-info" name="medicalInfo" rows="3" placeholder="Please list any medical conditions, allergies, or medications we should be aware of"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dietary-restrictions">Dietary Restrictions</label>
+                        <textarea id="dietary-restrictions" name="dietaryRestrictions" rows="2" placeholder="Any dietary restrictions or food allergies?"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Additional Notes (Optional)</label>
+                        <textarea id="message" name="message" rows="3" placeholder="Any additional information you'd like to share?"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Submit Registration</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Success Modal -->
+        <div class="modal" id="success-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-content">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <h3 id="modal-title">Registration Successful!</h3>
+                <p>Your registration has been submitted successfully. We'll contact you soon with more details!</p>
+                <button class="submit-btn" style="margin-top: 1.5rem;" onclick="window.location.href='events.html'">Back to Events</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script type="module">
+        import API_CONFIG from './api-config.js';
+
+        // Get event ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('event');
+
+        if (!eventId) {
+            alert('No event specified');
+            window.location.href = 'events.html';
+        }
+
+        // Load event details
+        async function loadEventDetails() {
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/events/${eventId}`);
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const event = data.data;
+                    
+                    // Display event information
+                    document.getElementById('event-title').textContent = event.title;
+                    document.getElementById('event-subtitle').textContent = `Register for ${event.title}`;
+                    document.getElementById('event-date').textContent = new Date(event.startDate).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                    document.getElementById('event-location').textContent = event.location || 'TBA';
+                    document.getElementById('event-description').textContent = event.description;
+                    
+                    if (event.cost > 0) {
+                        document.getElementById('event-cost').textContent = `Cost: KES ${event.cost.toLocaleString()}`;
+                        document.getElementById('event-cost-item').style.display = 'flex';
+                    }
+
+                    document.getElementById('event-info-card').style.display = 'block';
+
+                    // Check if registration is open
+                    if (!event.requiresRegistration) {
+                        alert('This event does not require registration');
+                        window.location.href = 'events.html';
+                        return;
+                    }
+
+                    const now = new Date();
+                    if (event.registrationDeadline && new Date(event.registrationDeadline) < now) {
+                        alert('Registration deadline has passed');
+                        window.location.href = 'events.html';
+                        return;
+                    }
+                } else {
+                    alert('Event not found');
+                    window.location.href = 'events.html';
+                }
+            } catch (error) {
+                console.error('Error loading event:', error);
+                alert('Error loading event details');
+            }
+        }
+
+        // Load header and footer
+        async function loadComponents() {
+            try {
+                const [headerResponse, footerResponse] = await Promise.all([
+                    fetch('components/header.html'),
+                    fetch('components/footer.html')
+                ]);
+
+                document.getElementById('header-placeholder').innerHTML = await headerResponse.text();
+                document.getElementById('footer-placeholder').innerHTML = await footerResponse.text();
+
+                // Initialize mobile menu
+                const menuToggle = document.querySelector('.menu-toggle');
+                const navMenu = document.querySelector('.nav-menu');
+                if (menuToggle && navMenu) {
+                    menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+                }
+            } catch (error) {
+                console.error('Error loading components:', error);
+            }
+        }
+
+        // Form submission
+        const form = document.getElementById('registration-form');
+        const successModal = document.getElementById('success-modal');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('.form-group').forEach(el => el.classList.remove('error'));
+
+            // Validate form
+            let isValid = true;
+
+            const name = document.getElementById('name');
+            if (!name.value.trim()) {
+                showError('name', 'Full name is required');
+                isValid = false;
+            }
+
+            const email = document.getElementById('email');
+            const emailRegex = /^\S+@\S+\.\S+$/;
+            if (!email.value.trim() || !emailRegex.test(email.value)) {
+                showError('email', 'Valid email is required');
+                isValid = false;
+            }
+
+            const phone = document.getElementById('phone');
+            if (!phone.value.trim()) {
+                showError('phone', 'Phone number is required');
+                isValid = false;
+            }
+
+            const age = document.getElementById('age');
+            if (!age.value || age.value < 10 || age.value > 15) {
+                showError('age', 'Age must be between 10 and 15');
+                isValid = false;
+            }
+
+            const emergencyName = document.getElementById('emergency-name');
+            if (!emergencyName.value.trim()) {
+                showError('emergency-name', 'Emergency contact name is required');
+                isValid = false;
+            }
+
+            const emergencyPhone = document.getElementById('emergency-phone');
+            if (!emergencyPhone.value.trim()) {
+                showError('emergency-phone', 'Emergency contact phone is required');
+                isValid = false;
+            }
+
+            const emergencyRelationship = document.getElementById('emergency-relationship');
+            if (!emergencyRelationship.value.trim()) {
+                showError('emergency-relationship', 'Relationship is required');
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            // Prepare form data
+            const formData = {
+                eventId,
+                name: name.value.trim(),
+                email: email.value.trim(),
+                phone: phone.value.trim(),
+                age: parseInt(age.value),
+                guardian: document.getElementById('guardian').value.trim(),
+                emergencyContact: {
+                    name: emergencyName.value.trim(),
+                    phone: emergencyPhone.value.trim(),
+                    relationship: emergencyRelationship.value.trim()
+                },
+                medicalInfo: document.getElementById('medical-info').value.trim(),
+                dietaryRestrictions: document.getElementById('dietary-restrictions').value.trim(),
+                message: document.getElementById('message').value.trim()
+            };
+
+            // Submit form
+            try {
+                const submitBtn = form.querySelector('.submit-btn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/event-registrations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successModal.style.display = 'flex';
+                    form.reset();
+                } else {
+                    alert(data.message || 'An error occurred. Please try again.');
+                }
+
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Registration';
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('An error occurred. Please try again later.');
+                const submitBtn = form.querySelector('.submit-btn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Registration';
+            }
+        });
+
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.parentElement.classList.add('error');
+            }
+        }
+
+        // Close modal on background click
+        successModal.addEventListener('click', (e) => {
+            if (e.target === successModal) {
+                window.location.href = 'events.html';
+            }
+        });
+
+        // Initialize
+        loadComponents();
+        loadEventDetails();
+    </script>
+</body>
+</html>
