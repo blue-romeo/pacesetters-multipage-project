@@ -2257,7 +2257,8 @@ input[type="checkbox"] {
 
 /* Fade in animation for loaded content */
 .fade-in {
-    animation: contentFadeIn 0.5s ease-in-out;
+    opacity: 0;
+    animation: contentFadeIn 0.5s ease-in-out forwards;
 }
 
 @keyframes contentFadeIn {

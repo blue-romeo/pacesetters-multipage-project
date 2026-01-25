@@ -2,6 +2,11 @@
    ADMIN DASHBOARD STYLES
    ======================================== */
 
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
 :root {
     --primary-color: #006837;
     --secondary-color: #D4AF37;

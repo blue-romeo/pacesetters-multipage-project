@@ -6,7 +6,8 @@ exports.getAllLeaders = async (req, res) => {
   try {
     const leaders = await Leader.find({ isActive: true })
       .sort({ order: 1, createdAt: 1 })
-      .select('-__v');
+      .select('name role bio photoUrl order')
+      .lean();
 
     res.status(200).json({
       success: true,

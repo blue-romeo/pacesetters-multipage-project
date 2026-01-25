@@ -5,6 +5,9 @@
 export class LeadersDisplay {
     constructor(apiClient) {
         this.apiClient = apiClient;
+        this.isLoading = false;
+        this.hasLoaded = false;
+        this.leadersData = [];
     }
 
     /**
@@ -12,19 +15,55 @@ export class LeadersDisplay {
      */
     async loadLeaders() {
         const leadershipGrid = document.getElementById('leadership-grid');
-        if (!leadershipGrid) return;
+        if (!leadershipGrid) {
+            console.warn('Leadership grid element not found');
+            return;
+        }
+
+        // Prevent multiple simultaneous loads
+        if (this.isLoading) {
+            console.log('Leaders already loading, skipping...');
+            return;
+        }
+
+        // If already successfully loaded, don't reload
+        if (this.hasLoaded && this.leadersData.length > 0) {
+            console.log('Leaders already loaded, skipping...');
+            return;
+        }
+
+        this.isLoading = true;
 
         try {
+            console.log('Fetching leaders data...');
             const result = await this.apiClient.get('/leaders');
+            console.log('Leaders API response:', result);
             
-            if (result.success && result.data && result.data.length > 0) {
-                this.renderLeaders(leadershipGrid, result.data);
+            if (result && result.success && result.data) {
+                if (result.data.length > 0) {
+                    this.leadersData = result.data;
+                    this.renderLeaders(leadershipGrid, result.data);
+                    this.hasLoaded = true;
+                    console.log(`✅ Successfully rendered ${result.data.length} leaders`);
+                } else {
+                    console.log('No leaders found');
+                    if (!this.hasLoaded) {
+                        this.renderEmptyState(leadershipGrid);
+                    }
+                }
             } else {
-                this.renderEmptyState(leadershipGrid);
+                console.warn('Invalid leaders response structure:', result);
+                if (!this.hasLoaded) {
+                    this.renderEmptyState(leadershipGrid);
+                }
             }
         } catch (error) {
             console.error('Error loading leaders:', error);
-            this.renderErrorState(leadershipGrid);
+            if (!this.hasLoaded) {
+                this.renderErrorState(leadershipGrid);
+            }
+        } finally {
+            this.isLoading = false;
         }
     }
 

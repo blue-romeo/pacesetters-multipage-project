@@ -17,7 +17,7 @@
             </div>
 
             <form id="login-form" class="login-form">
-                <div class="alert" id="alert" style="display: none;"></div>
+                <div class="alert hidden" id="alert"></div>
 
                 <div class="form-group">
                     <label for="username">
@@ -54,7 +54,7 @@
                             required
                             autocomplete="current-password"
                         >
-                        <button type="button" class="toggle-password" id="toggle-password">
+                        <button type="button" class="toggle-password" id="toggle-password" title="Toggle password visibility">
                             <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
@@ -65,7 +65,7 @@
 
                 <button type="submit" class="btn-login" id="login-btn">
                     <span>Login</span>
-                    <div class="spinner" style="display: none;"></div>
+                    <div class="spinner hidden"></div>
                 </button>
             </form>
 
@@ -76,6 +76,6 @@
     </div>
 
     <script src="api-config.js"></script>
-    <script src="admin-auth.js"></script>
+    <script src="legacy/admin-auth.js"></script>
 </body>
 </html>

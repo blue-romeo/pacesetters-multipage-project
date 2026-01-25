@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Pathfinders Club</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+    
+    <!-- Preconnect to API server -->
+    <script>
+        const apiHost = ['localhost', '127.0.0.1', '::1'].includes(location.hostname) || location.protocol === 'file:' 
+            ? 'http://localhost:5000' 
+            : location.origin;
+        document.write(`<link rel="preconnect" href="${apiHost}" crossorigin>`);
+        document.write(`<link rel="dns-prefetch" href="${apiHost}">`);
+    </script>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="admin-styles.css" as="style">
+    <link rel="modulepreload" href="js/admin/admin-main.js">
+    
     <link rel="stylesheet" href="admin-styles.css">
 </head>
 <body class="admin-dashboard">

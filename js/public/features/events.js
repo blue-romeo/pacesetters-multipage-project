@@ -6,6 +6,8 @@ export class EventsDisplay {
     constructor(apiClient) {
         this.apiClient = apiClient;
         this.eventsData = [];
+        this.isLoading = false;
+        this.hasLoaded = false;
     }
 
     /**
@@ -13,12 +15,31 @@ export class EventsDisplay {
      */
     async loadEvents() {
         const eventsList = document.querySelector('.events-list');
-        if (!eventsList) return;
+        if (!eventsList) {
+            console.warn('Events list element not found');
+            return;
+        }
+
+        // Prevent multiple simultaneous loads
+        if (this.isLoading) {
+            console.log('Events already loading, skipping...');
+            return;
+        }
+
+        // If already successfully loaded, don't reload
+        if (this.hasLoaded && this.eventsData.length > 0) {
+            console.log('Events already loaded, skipping...');
+            return;
+        }
+
+        this.isLoading = true;
 
         try {
+            console.log('Fetching events data...');
             const result = await this.apiClient.get('/events');
+            console.log('Events API response:', result);
             
-            if (result.success && result.data && result.data.length > 0) {
+            if (result && result.success && result.data && result.data.length > 0) {
                 // Transform API data
                 this.eventsData = result.data.map(event => ({
                     title: event.title,
@@ -38,12 +59,21 @@ export class EventsDisplay {
                 }));
                 
                 this.renderEvents();
+                this.hasLoaded = true;
+                console.log(`✅ Successfully rendered ${result.data.length} events`);
             } else {
-                this.renderEmptyState(eventsList);
+                console.log('No events found');
+                if (!this.hasLoaded) {
+                    this.renderEmptyState(eventsList);
+                }
             }
         } catch (error) {
             console.error('Error loading events:', error);
-            this.renderErrorState(eventsList);
+            if (!this.hasLoaded) {
+                this.renderErrorState(eventsList);
+            }
+        } finally {
+            this.isLoading = false;
         }
     }
 

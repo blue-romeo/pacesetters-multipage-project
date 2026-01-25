@@ -4,7 +4,7 @@
  */
 
 import { showToast, showConfirmDialog } from '../../core/notifications.js';
-import { clearFrontendCache } from '../../core/cache.js';
+import { clearFrontendCache, debounce } from '../../core/cache.js';
 
 export class GalleryManager {
     constructor(apiClient, apiConfig) {
@@ -13,6 +13,11 @@ export class GalleryManager {
         this.selectedItems = new Set();
         this.currentPage = 1;
         this.currentCategory = '';
+        
+        // Create debounced load function for better performance
+        this.debouncedLoad = debounce((page, category) => {
+            this.load(page, category);
+        }, 300);
     }
 
     /**
@@ -358,5 +363,104 @@ export class GalleryManager {
         
         paginationHTML += '</div>';
         container.innerHTML = paginationHTML;
+    }
+    
+    /**
+     * Open upload modal for new gallery item
+     */
+    openUploadModal() {
+        const modalHTML = `
+            <div class="modal-backdrop" onclick="window.closeModal()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Upload Gallery Image</h2>
+                    <button class="modal-close" onclick="window.closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="upload-gallery-form">
+                        <div class="form-group">
+                            <label for="new-gallery-title">Title *</label>
+                            <input type="text" id="new-gallery-title" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-gallery-description">Description</label>
+                            <textarea id="new-gallery-description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-gallery-category">Category *</label>
+                            <select id="new-gallery-category" class="form-control" required>
+                                <option value="">Select category...</option>
+                                <option value="activities">Activities</option>
+                                <option value="camping">Camping</option>
+                                <option value="awards">Awards & Achievements</option>
+                                <option value="events">Events</option>
+                                <option value="team">Team</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-gallery-imageUrl">Image URL *</label>
+                            <input type="url" id="new-gallery-imageUrl" class="form-control" required 
+                                   placeholder="https://example.com/image.jpg">
+                            <small style="color: #64748b; font-size: 12px;">Enter the full URL of the image</small>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="new-gallery-isFeatured">
+                                Featured Image
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.closeModal()">Cancel</button>
+                            <button type="submit" class="btn-primary">Upload</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        const modalContainer = document.getElementById('modal-container');
+        if (modalContainer) {
+            modalContainer.innerHTML = modalHTML;
+            modalContainer.style.display = 'flex';
+            
+            document.getElementById('upload-gallery-form').addEventListener('submit', (e) => {
+                this.submitGalleryUpload(e);
+            });
+        }
+    }
+    
+    /**
+     * Submit gallery upload form
+     */
+    async submitGalleryUpload(event) {
+        event.preventDefault();
+        
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Uploading...';
+        
+        const galleryData = {
+            title: document.getElementById('new-gallery-title').value,
+            description: document.getElementById('new-gallery-description').value || undefined,
+            category: document.getElementById('new-gallery-category').value,
+            imageUrl: document.getElementById('new-gallery-imageUrl').value,
+            isFeatured: document.getElementById('new-gallery-isFeatured').checked
+        };
+        
+        const result = await this.api.post('/gallery', galleryData);
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        
+        if (result && result.data && result.data.success) {
+            window.closeModal();
+            clearFrontendCache(['gallery']);
+            showToast('Gallery image uploaded successfully', 'success');
+            this.load(1, this.currentCategory);
+        } else {
+            showToast(result?.data?.message || 'Failed to upload image', 'error');
+        }
     }
 }

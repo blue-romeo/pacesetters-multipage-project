@@ -7,6 +7,8 @@ export class GalleryLightbox {
         this.apiClient = apiClient;
         this.galleryData = [];
         this.currentImageIndex = 0;
+        this.isLoading = false;
+        this.hasLoaded = false;
     }
 
     /**
@@ -14,21 +16,56 @@ export class GalleryLightbox {
      */
     async loadGallery() {
         const galleryGrid = document.querySelector('.gallery-grid');
-        if (!galleryGrid) return;
+        if (!galleryGrid) {
+            console.warn('Gallery grid element not found');
+            return;
+        }
+
+        // Prevent multiple simultaneous loads
+        if (this.isLoading) {
+            console.log('Gallery already loading, skipping...');
+            return;
+        }
+
+        // If already successfully loaded, don't reload
+        if (this.hasLoaded && this.galleryData.length > 0) {
+            console.log('Gallery already loaded, skipping...');
+            return;
+        }
+
+        this.isLoading = true;
 
         try {
+            console.log('Fetching gallery data...');
             const result = await this.apiClient.get('/gallery');
+            console.log('Gallery API response:', result);
             
-            if (result.success && result.data && result.data.length > 0) {
-                this.galleryData = result.data;
-                this.renderGallery(galleryGrid);
-                this.initializeLightbox();
+            if (result && result.success && result.data) {
+                if (result.data.length > 0) {
+                    this.galleryData = result.data;
+                    this.renderGallery(galleryGrid);
+                    this.hasLoaded = true;
+                    this.initializeLightbox();
+                    console.log(`✅ Successfully rendered ${result.data.length} gallery items`);
+                } else {
+                    console.log('No gallery items found');
+                    if (!this.hasLoaded) {
+                        this.renderEmptyState(galleryGrid);
+                    }
+                }
             } else {
-                this.renderEmptyState(galleryGrid);
+                console.warn('Invalid gallery response structure:', result);
+                if (!this.hasLoaded) {
+                    this.renderEmptyState(galleryGrid);
+                }
             }
         } catch (error) {
             console.error('Error loading gallery:', error);
-            this.renderErrorState(galleryGrid);
+            if (!this.hasLoaded) {
+                this.renderErrorState(galleryGrid);
+            }
+        } finally {
+            this.isLoading = false;
         }
     }
 
@@ -42,8 +79,7 @@ export class GalleryLightbox {
                     aria-label="Open image ${index + 1} in lightbox" 
                     style="animation-delay: ${index * 0.05}s">
                 <img src="${item.imageUrl}" 
-                     alt="${item.caption || 'Gallery image'}" 
-                     loading="lazy">
+                     alt="${item.caption || 'Gallery image'}">
             </button>
         `).join('');
     }
