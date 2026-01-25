@@ -6,6 +6,18 @@
     <meta name="description" content="Become a volunteer with Pathfinders Club - share your skills and passion">
     <title>Volunteer Registration - Pathfinders Club</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+    
+    <!-- Performance optimizations -->
+    <script>
+        const apiHost = ['localhost', '127.0.0.1', '::1'].includes(location.hostname) || location.protocol === 'file:' 
+            ? 'http://localhost:5000' 
+            : location.origin;
+        document.write(`<link rel="preconnect" href="${apiHost}" crossorigin>`);
+        document.write(`<link rel="dns-prefetch" href="${apiHost}">`);
+    </script>
+    <link rel="preload" href="css/main.css" as="style">
+    <link rel="modulepreload" href="js/public/public-main.js">
+    
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -172,8 +184,8 @@
 
     <div id="footer-placeholder"></div>
 
+    <script src="api-config.js"></script>
     <script type="module">
-        import API_CONFIG from './api-config.js';
 
         // Load header and footer
         async function loadComponents() {
@@ -314,7 +326,7 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Submitting...';
 
-                const response = await fetch(`${API_CONFIG.BASE_URL}/api/volunteers`, {
+                const response = await fetch(`${API_CONFIG.baseURL}/volunteers`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

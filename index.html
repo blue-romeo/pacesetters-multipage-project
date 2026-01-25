@@ -7,6 +7,22 @@
     <title>Home - Pathfinders Club</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
     
+    <!-- Preconnect to API server for faster API calls -->
+    <script>
+        const apiHost = ['localhost', '127.0.0.1', '::1'].includes(location.hostname) || location.protocol === 'file:' 
+            ? 'http://localhost:5000' 
+            : location.origin;
+        document.write(`<link rel="preconnect" href="${apiHost}" crossorigin>`);
+        document.write(`<link rel="dns-prefetch" href="${apiHost}">`);
+    </script>
+    
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="css/main.css" as="style">
+    <link rel="preload" href="styles.css" as="style">
+    
+    <!-- Preload critical JavaScript -->
+    <link rel="modulepreload" href="js/public/public-main.js">
+    <link rel="modulepreload" href="js/public/core/api.js">
     
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="styles.css">

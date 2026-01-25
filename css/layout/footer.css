@@ -48,12 +48,28 @@
     text-decoration: none;
     transition: opacity var(--transition-base);
     opacity: 0.9;
+    position: relative;
+}
+
+.footer-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--color-gold);
+    transition: width var(--transition-base);
 }
 
 .footer-links a:hover,
 .footer-links a:focus {
-    opacity: 1;
-    text-decoration: underline;
+    opacity: 0.85;
+}
+
+.footer-links a:hover::after,
+.footer-links a:focus::after {
+    width: 100%;
 }
 
 .contact-info {

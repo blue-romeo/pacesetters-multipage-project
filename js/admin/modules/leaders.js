@@ -128,6 +128,114 @@ export class LeadersManager {
         // Note: Full edit functionality with photo upload is complex
         // Keeping in legacy admin.js for now
     }
+    
+    /**
+     * Open create modal for new leader
+     */
+    openCreateModal() {
+        const modalHTML = `
+            <div class="modal-backdrop" onclick="window.closeModal()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Leader</h2>
+                    <button class="modal-close" onclick="window.closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-leader-form">
+                        <div class="form-group">
+                            <label for="new-leader-name">Name *</label>
+                            <input type="text" id="new-leader-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-leader-role">Role *</label>
+                            <input type="text" id="new-leader-role" class="form-control" required 
+                                   placeholder="e.g., Director, Deputy Director, Counselor">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-leader-bio">Bio *</label>
+                            <textarea id="new-leader-bio" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-leader-email">Email</label>
+                            <input type="email" id="new-leader-email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-leader-phone">Phone</label>
+                            <input type="tel" id="new-leader-phone" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-leader-photoUrl">Photo URL *</label>
+                            <input type="url" id="new-leader-photoUrl" class="form-control" required 
+                                   placeholder="https://example.com/photo.jpg">
+                            <small style="color: #64748b; font-size: 12px;">Enter the full URL of the leader's photo</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-leader-order">Display Order</label>
+                            <input type="number" id="new-leader-order" class="form-control" value="0" min="0">
+                            <small style="color: #64748b; font-size: 12px;">Lower numbers appear first</small>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="new-leader-isActive" checked>
+                                Active
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.closeModal()">Cancel</button>
+                            <button type="submit" class="btn-primary">Add Leader</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        const modalContainer = document.getElementById('modal-container');
+        if (modalContainer) {
+            modalContainer.innerHTML = modalHTML;
+            modalContainer.style.display = 'flex';
+            
+            document.getElementById('create-leader-form').addEventListener('submit', (e) => {
+                this.submitCreateLeader(e);
+            });
+        }
+    }
+    
+    /**
+     * Submit create leader form
+     */
+    async submitCreateLeader(event) {
+        event.preventDefault();
+        
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+        
+        const leaderData = {
+            name: document.getElementById('new-leader-name').value,
+            role: document.getElementById('new-leader-role').value,
+            bio: document.getElementById('new-leader-bio').value,
+            email: document.getElementById('new-leader-email').value || undefined,
+            phone: document.getElementById('new-leader-phone').value || undefined,
+            photoUrl: document.getElementById('new-leader-photoUrl').value,
+            order: parseInt(document.getElementById('new-leader-order').value) || 0,
+            isActive: document.getElementById('new-leader-isActive').checked
+        };
+        
+        const result = await this.api.post('/leaders', leaderData);
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        
+        if (result && result.data && result.data.success) {
+            window.closeModal();
+            clearFrontendCache(['leaders']);
+            showToast('Leader added successfully', 'success');
+            this.load(1);
+        } else {
+            showToast(result?.data?.message || 'Failed to add leader', 'error');
+        }
+    }
 
     /**
      * Delete leader

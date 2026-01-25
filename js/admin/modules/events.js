@@ -419,6 +419,155 @@ export class EventsManager {
             await this.load(this.currentPage);
         }
     }
+    
+    /**
+     * Open create modal for new event
+     */
+    openCreateModal() {
+        const modalHTML = `
+            <div class="modal-backdrop" onclick="window.closeModal()"></div>
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>Create New Event</h2>
+                    <button class="modal-close" onclick="window.closeModal()">×</button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <form id="create-event-form">
+                        <div class="form-group">
+                            <label for="new-event-title">Title *</label>
+                            <input type="text" id="new-event-title" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-category">Category *</label>
+                            <select id="new-event-category" class="form-control" required>
+                                <option value="">Select category...</option>
+                                <option value="meeting">Meeting</option>
+                                <option value="camping">Camping</option>
+                                <option value="service">Service</option>
+                                <option value="training">Training</option>
+                                <option value="social">Social</option>
+                                <option value="competition">Competition</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-description">Description *</label>
+                            <textarea id="new-event-description" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-startDate">Start Date *</label>
+                            <input type="datetime-local" id="new-event-startDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-endDate">End Date</label>
+                            <input type="datetime-local" id="new-event-endDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-location">Location</label>
+                            <input type="text" id="new-event-location" class="form-control" placeholder="e.g., Main Camp Ground">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-imageUrl">Event Image URL</label>
+                            <input type="url" id="new-event-imageUrl" class="form-control" placeholder="https://example.com/image.jpg">
+                            <small style="color: #64748b; font-size: 12px;">Enter the full URL of the event image</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-maxParticipants">Max Participants</label>
+                            <input type="number" id="new-event-maxParticipants" class="form-control" min="1" placeholder="Leave empty for unlimited">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-cost">Cost (KES)</label>
+                            <input type="number" id="new-event-cost" class="form-control" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-additionalInfo">Additional Info</label>
+                            <textarea id="new-event-additionalInfo" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="new-event-requiresRegistration">
+                                Requires Registration
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-event-registrationDeadline">Registration Deadline</label>
+                            <input type="datetime-local" id="new-event-registrationDeadline" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="new-event-isFeatured">
+                                Featured Event
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="new-event-isPublished" checked>
+                                Publish immediately
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.closeModal()">Cancel</button>
+                            <button type="submit" class="btn-primary">Create Event</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        const modalContainer = document.getElementById('modal-container');
+        if (modalContainer) {
+            modalContainer.innerHTML = modalHTML;
+            modalContainer.style.display = 'flex';
+            
+            document.getElementById('create-event-form').addEventListener('submit', (e) => {
+                this.submitCreateEvent(e);
+            });
+        }
+    }
+    
+    /**
+     * Submit create event form
+     */
+    async submitCreateEvent(event) {
+        event.preventDefault();
+        
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+        
+        const eventData = {
+            title: document.getElementById('new-event-title').value,
+            category: document.getElementById('new-event-category').value,
+            description: document.getElementById('new-event-description').value,
+            startDate: document.getElementById('new-event-startDate').value,
+            endDate: document.getElementById('new-event-endDate').value || undefined,
+            location: document.getElementById('new-event-location').value || undefined,
+            imageUrl: document.getElementById('new-event-imageUrl').value || undefined,
+            maxParticipants: document.getElementById('new-event-maxParticipants').value || undefined,
+            cost: parseFloat(document.getElementById('new-event-cost').value) || 0,
+            additionalInfo: document.getElementById('new-event-additionalInfo').value || undefined,
+            requiresRegistration: document.getElementById('new-event-requiresRegistration').checked,
+            registrationDeadline: document.getElementById('new-event-registrationDeadline').value || undefined,
+            isFeatured: document.getElementById('new-event-isFeatured').checked,
+            isPublished: document.getElementById('new-event-isPublished').checked
+        };
+        
+        const result = await this.api.post('/events', eventData);
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        
+        if (result && result.data && result.data.success) {
+            window.closeModal();
+            clearFrontendCache(['events', 'home_events']);
+            showToast(`Event "${eventData.title}" ${eventData.isPublished ? 'created and published' : 'saved as draft'}`, 'success');
+            this.load(1);
+        } else {
+            const errorMessage = result?.data?.message || 'Failed to create event';
+            showToast(errorMessage, 'error');
+        }
+    }
 
     /**
      * Render pagination

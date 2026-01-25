@@ -24,6 +24,8 @@ exports.getAllEvents = async (req, res) => {
       .sort({ startDate: 1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
+      .select('title startDate endDate location category imageUrl isFeatured isPublished requiresRegistration maxParticipants registeredParticipants')
+      .lean()
       .exec();
 
     const count = await Event.countDocuments(query);

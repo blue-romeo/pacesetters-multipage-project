@@ -40,11 +40,11 @@ if (togglePassword) {
 function showAlert(message, type = 'error') {
     alertDiv.textContent = message;
     alertDiv.className = `alert ${type}`;
-    alertDiv.style.display = 'block';
+    alertDiv.classList.remove('hidden');
     
     if (type === 'success') {
         setTimeout(() => {
-            alertDiv.style.display = 'none';
+            alertDiv.classList.add('hidden');
         }, 3000);
     }
 }
@@ -59,7 +59,7 @@ loginForm.addEventListener('submit', async (e) => {
     // Disable button
     loginBtn.disabled = true;
     loginBtn.querySelector('span').textContent = 'Logging in...';
-    loginBtn.querySelector('.spinner').style.display = 'block';
+    loginBtn.querySelector('.spinner').classList.remove('hidden');
     
     try {
         const response = await fetch(API_CONFIG.getFullURL(API_CONFIG.endpoints.auth.login), {
@@ -92,7 +92,7 @@ loginForm.addEventListener('submit', async (e) => {
         // Re-enable button
         loginBtn.disabled = false;
         loginBtn.querySelector('span').textContent = 'Login';
-        loginBtn.querySelector('.spinner').style.display = 'none';
+        loginBtn.querySelector('.spinner').classList.add('hidden');
     }
 });
 

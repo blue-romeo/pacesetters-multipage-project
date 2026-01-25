@@ -21,6 +21,8 @@ exports.getAllGalleryItems = async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .populate('eventId', 'title startDate')
+      .select('title imageUrl thumbnailUrl category isFeatured captureDate')
+      .lean()
       .exec();
 
     const count = await Gallery.countDocuments(query);
@@ -65,6 +67,7 @@ exports.getAllGalleryItemsAdmin = async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .populate('eventId', 'title startDate')
+      .lean()
       .exec();
 
     const count = await Gallery.countDocuments(query);

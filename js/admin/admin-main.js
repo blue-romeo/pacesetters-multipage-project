@@ -6,6 +6,7 @@
 import { ApiClient } from '../core/api.js';
 import { showToast, showModalNotification, closeNotificationModal } from '../core/notifications.js';
 import { clearFrontendCache } from '../core/cache.js';
+import { perfMonitor, logPerformanceMetrics } from '../core/performance.js';
 import { GalleryManager } from './modules/gallery.js';
 import { EventsManager } from './modules/events.js';
 import { VolunteersManager } from './modules/volunteers.js';
@@ -70,10 +71,13 @@ async function apiRequest(endpoint, options = {}) {
 
 // ========== DASHBOARD FUNCTIONS (from original admin.js) ========== 
 async function loadDashboardStats() {
+    perfMonitor.start('dashboard-stats');
+    
     const statsResult = await apiClient.get(API_CONFIG.endpoints.stats);
     
     if (!statsResult || !statsResult.data || !statsResult.data.success) {
         console.error('Failed to load dashboard stats');
+        perfMonitor.end('dashboard-stats');
         return;
     }
     
@@ -85,17 +89,22 @@ async function loadDashboardStats() {
     document.getElementById('stat-events').textContent = stats.events || 0;
     document.getElementById('stat-gallery').textContent = stats.gallery || 0;
     document.getElementById('stat-newsletters').textContent = stats.newsletters || 0;
+    
+    const duration = perfMonitor.end('dashboard-stats');
+    console.log(`✅ Dashboard stats loaded in ${duration?.toFixed(2)}ms`);
 }
 
 async function loadRecentData() {
-    // Load recent contacts
-    const contactsResult = await apiClient.get(`${API_CONFIG.endpoints.contacts}?limit=5&sort=-submittedAt`);
+    // Load contacts and donations in parallel for faster performance
+    const [contactsResult, donationsResult] = await Promise.all([
+        apiClient.get(`${API_CONFIG.endpoints.contacts}?limit=5&sort=-submittedAt`),
+        apiClient.get(`${API_CONFIG.endpoints.donations}?limit=5&sort=-date`)
+    ]);
+    
     if (contactsResult && contactsResult.data && contactsResult.data.success) {
         renderRecentContacts(contactsResult.data.data);
     }
     
-    // Load recent donations
-    const donationsResult = await apiClient.get(`${API_CONFIG.endpoints.donations}?limit=5&sort=-date`);
     if (donationsResult && donationsResult.data && donationsResult.data.success) {
         renderRecentDonations(donationsResult.data.data);
     }
@@ -140,11 +149,22 @@ function renderRecentDonations(donations) {
 }
 
 // ========== SECTION LOADING ========== 
-async function loadSectionData(section) {
+const loadedSections = new Set();
+
+async function loadSectionData(section, forceReload = false) {
+    // Skip if already loaded (lazy loading optimization)
+    if (loadedSections.has(section) && !forceReload) {
+        return;
+    }
+    
+    loadedSections.add(section);
+    
     switch (section) {
         case 'dashboard':
-            await loadDashboardStats();
-            await loadRecentData();
+            await Promise.all([
+                loadDashboardStats(),
+                loadRecentData()
+            ]);
             break;
         case 'gallery':
             galleryManager.load();
@@ -241,16 +261,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('refresh-btn')?.addEventListener('click', () => {
         const activeSection = document.querySelector('.nav-item.active')?.getAttribute('data-section');
         if (activeSection) {
-            loadSectionData(activeSection);
+            loadedSections.delete(activeSection);
+            loadSectionData(activeSection, true);
             showToast('Data refreshed successfully', 'success');
         }
     });
     
-    // Gallery filter
+    // Gallery filter - with debounce for better performance
     const galleryFilter = document.getElementById('filter-gallery-category');
     if (galleryFilter) {
         galleryFilter.addEventListener('change', (e) => {
-            galleryManager.load(1, e.target.value);
+            // Use debounced load instead of immediate load
+            galleryManager.debouncedLoad(1, e.target.value);
         });
     }
     
@@ -262,9 +284,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    // Load initial data
-    await loadDashboardStats();
-    await loadRecentData();
+    // Create Event button
+    const createEventBtn = document.getElementById('create-event-btn');
+    if (createEventBtn) {
+        createEventBtn.addEventListener('click', () => {
+            eventsManager.openCreateModal();
+        });
+    }
+    
+    // Create Leader button
+    const createLeaderBtn = document.getElementById('create-leader-btn');
+    if (createLeaderBtn) {
+        createLeaderBtn.addEventListener('click', () => {
+            leadersManager.openCreateModal();
+        });
+    }
+    
+    // Create Admin button
+    const createAdminBtn = document.getElementById('create-admin-btn');
+    if (createAdminBtn) {
+        createAdminBtn.addEventListener('click', () => {
+            showToast('Admin creation requires super admin privileges. Contact system administrator.', 'info');
+            // TODO: Implement admin creation modal with role checks
+        });
+    }
+    
+    // Upload Gallery button
+    const uploadGalleryBtn = document.getElementById('upload-gallery-btn');
+    if (uploadGalleryBtn) {
+        uploadGalleryBtn.addEventListener('click', () => {
+            galleryManager.openUploadModal();
+        });
+    }
+    
+    // Load initial data in parallel
+    perfMonitor.start('initial-load');
+    await Promise.all([
+        loadDashboardStats(),
+        loadRecentData()
+    ]);
+    const loadTime = perfMonitor.end('initial-load');
+    console.log(`🚀 Admin dashboard loaded in ${loadTime?.toFixed(2)}ms`);
+    
+    // Log overall performance metrics
+    if (process.env.NODE_ENV === 'development') {
+        setTimeout(() => logPerformanceMetrics(), 1000);
+    }
 });
 
 // ========== EXPORTS FOR FUTURE USE ========== 
